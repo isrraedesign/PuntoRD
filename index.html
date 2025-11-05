@@ -3,67 +3,106 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ExploraRD - Guía Turística Interactiva</title>
+<title>ExploraRD — Guía Turística Interactiva</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
-  body {margin:0;font-family:'Poppins',sans-serif;}
+  body {margin:0; font-family:'Poppins',sans-serif; background:#f9f8f4;}
+  header {
+    background:linear-gradient(90deg,#00897b,#4db6ac);
+    color:white; padding:10px 20px; display:flex;
+    justify-content:space-between; align-items:center;
+    font-weight:bold; letter-spacing:0.5px;
+  }
+  header h1 {font-size:1.1rem; margin:0;}
   #map {height:100vh;}
-  #langBtn {position:absolute;top:10px;right:10px;z-index:1000;padding:6px 10px;border:none;background:#00796b;color:white;border-radius:6px;cursor:pointer;}
+  #langBtn {
+    background:#004d40; color:white; border:none; padding:6px 12px;
+    border-radius:8px; cursor:pointer; font-weight:bold;
+  }
+  .leaflet-popup-content {font-size:0.95rem; line-height:1.3;}
+  .popup-btn {
+    background:#00796b; color:white; border:none; border-radius:6px;
+    padding:4px 8px; cursor:pointer; font-size:0.85rem; margin-top:4px;
+  }
 </style>
 </head>
 <body>
 
-<button id="langBtn">English</button>
+<header>
+  <h1>🌴 ExploraRD — Mapa Turístico</h1>
+  <button id="langBtn">English</button>
+</header>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-let lang="es";
-const map=L.map("map").setView([18.7,-70.2],7);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:"© OpenStreetMap"}).addTo(map);
+// ======= CONFIGURACIÓN =======
+let lang = "es";
+const map = L.map('map').setView([18.7, -70.2], 7);
 
-const lugares=[
-  {es:{nombre:"Teleférico de Puerto Plata",tipo:"Mirador",desc:"Vista panorámica desde la cima del monte Isabel de Torres"},
-   en:{nombre:"Puerto Plata Cable Car",tipo:"Viewpoint",desc:"Panoramic view from Isabel de Torres mountain"},
-   coords:[19.77,-70.69]},
-  {es:{nombre:"Playa Bávaro",tipo:"Playa",desc:"Arena blanca y mar turquesa en Punta Cana"},
-   en:{nombre:"Bavaro Beach",tipo:"Beach",desc:"White sand and turquoise sea in Punta Cana"},
-   coords:[18.69,-68.43]},
-  {es:{nombre:"Cascada El Limón",tipo:"Cascada",desc:"Hermosa cascada natural en Samaná"},
-   en:{nombre:"El Limón Waterfall",tipo:"Waterfall",desc:"Beautiful natural waterfall in Samaná"},
-   coords:[19.29,-69.40]},
-  {es:{nombre:"Bahía de las Águilas",tipo:"Playa",desc:"Una de las playas más vírgenes del Caribe"},
-   en:{nombre:"Bahía de las Águilas",tipo:"Beach",desc:"One of the most pristine beaches in the Caribbean"},
-   coords:[17.82,-71.55]}
+// 🎨 Estilo de mapa único (no igual a Google)
+L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=5zT6Rglq3sYl4mXUztuR9efgVto4ke6aZWeT4SRf4J3bUGbH4m3tH5U1fEhnp58D', {
+  attribution: '© Jawg Maps & OpenStreetMap',
+}).addTo(map);
+
+// ======= LUGARES =======
+const lugares = [
+  {
+    coords: [19.773, -70.698],
+    es: {nombre:"Teleférico de Puerto Plata", tipo:"Mirador", desc:"Vista panorámica desde el monte Isabel de Torres."},
+    en: {nombre:"Puerto Plata Cable Car", tipo:"Viewpoint", desc:"Panoramic view from Isabel de Torres mountain."}
+  },
+  {
+    coords: [19.755, -70.519],
+    es: {nombre:"Playa Sosúa", tipo:"Playa", desc:"Arena dorada y aguas claras ideales para bucear."},
+    en: {nombre:"Sosúa Beach", tipo:"Beach", desc:"Golden sand and clear waters perfect for diving."}
+  },
+  {
+    coords: [18.693, -68.429],
+    es: {nombre:"Playa Bávaro", tipo:"Playa", desc:"Una de las playas más famosas de Punta Cana."},
+    en: {nombre:"Bavaro Beach", tipo:"Beach", desc:"One of Punta Cana’s most famous beaches."}
+  },
+  {
+    coords: [18.522, -68.363],
+    es: {nombre:"Hoyo Azul", tipo:"Cenote", desc:"Piscina natural azul intenso en Scape Park."},
+    en: {nombre:"Hoyo Azul", tipo:"Cenote", desc:"Natural blue pool inside Scape Park."}
+  }
 ];
 
-// Función para mostrar los marcadores con nombre visible
-function mostrarLugares(){
-  map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});
-  lugares.forEach(l=>{
-    const texto=lang==="es"?l.es:l.en;
-    const marker=L.marker(l.coords).addTo(map)
-      .bindPopup(`<b>${texto.nombre}</b><br>${texto.tipo}<br>${texto.desc}<br><button onclick="abrirRuta(${l.coords[0]},${l.coords[1]})">${lang==="es"?"Cómo llegar":"Get directions"}</button>`)
-      .bindTooltip(texto.nombre,{permanent:true,direction:"top",offset:[0,-10]});
+// ======= FUNCIONES =======
+function mostrarLugares() {
+  map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
+  lugares.forEach(lugar => {
+    const t = lang === "es" ? lugar.es : lugar.en;
+    const marker = L.marker(lugar.coords).addTo(map);
+    marker.bindTooltip(t.nombre, {permanent:true, direction:'top', offset:[0,-10]});
+    marker.bindPopup(`
+      <b>${t.nombre}</b><br>
+      ${t.tipo}<br>
+      ${t.desc}<br>
+      <button class="popup-btn" onclick="ruta(${lugar.coords[0]},${lugar.coords[1]})">
+        ${lang === "es" ? "Cómo llegar" : "Get directions"}
+      </button>
+    `);
   });
 }
 
-// Abrir ruta en Google Maps
-function abrirRuta(lat,lon){
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const url=`https://www.google.com/maps/dir/${pos.coords.latitude},${pos.coords.longitude}/${lat},${lon}`;
-      window.open(url,"_blank");
-    },()=>window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank"));
-  }else{
-    window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank");
+function ruta(lat, lon) {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const url = `https://www.google.com/maps/dir/${pos.coords.latitude},${pos.coords.longitude}/${lat},${lon}`;
+      window.open(url, "_blank");
+    }, () => window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank"));
+  } else {
+    window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
   }
 }
 
-document.getElementById("langBtn").onclick=()=>{
-  lang=lang==="es"?"en":"es";
-  document.getElementById("langBtn").innerText=lang==="es"?"English":"Español";
+document.getElementById("langBtn").onclick = () => {
+  lang = lang === "es" ? "en" : "es";
+  document.getElementById("langBtn").innerText = lang === "es" ? "English" : "Español";
+  document.querySelector("header h1").innerText = lang === "es" ? "🌴 ExploraRD — Mapa Turístico" : "🌴 ExploreDR — Tourist Map";
   mostrarLugares();
 };
 
