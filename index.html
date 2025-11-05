@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ExploraRD — Guía Turística Interactiva</title>
+<title>Explora Puerto Plata — Guía Turística</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
@@ -30,83 +30,91 @@
 <body>
 
 <header>
-  <h1>🌴 ExploraRD — Mapa Turístico</h1>
+  <h1>🌴 Explora Puerto Plata — Mapa Turístico</h1>
   <button id="langBtn">English</button>
 </header>
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ======= CONFIGURACIÓN =======
-let lang = "es";
-const map = L.map('map').setView([18.7, -70.2], 7);
+let lang="es";
+const map=L.map('map').setView([19.78,-70.68],11);
 
-// 🎨 Estilo de mapa único (no igual a Google)
-L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=5zT6Rglq3sYl4mXUztuR9efgVto4ke6aZWeT4SRf4J3bUGbH4m3tH5U1fEhnp58D', {
-  attribution: '© Jawg Maps & OpenStreetMap',
+// 🎨 Estilo diferente a Google Maps
+L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=5zT6Rglq3sYl4mXUztuR9efgVto4ke6aZWeT4SRf4J3bUGbH4m3tH5U1fEhnp58D',{
+  attribution:'© Jawg Maps & OpenStreetMap'
 }).addTo(map);
 
-// ======= LUGARES =======
-const lugares = [
-  {
-    coords: [19.773, -70.698],
-    es: {nombre:"Teleférico de Puerto Plata", tipo:"Mirador", desc:"Vista panorámica desde el monte Isabel de Torres."},
-    en: {nombre:"Puerto Plata Cable Car", tipo:"Viewpoint", desc:"Panoramic view from Isabel de Torres mountain."}
-  },
-  {
-    coords: [19.755, -70.519],
-    es: {nombre:"Playa Sosúa", tipo:"Playa", desc:"Arena dorada y aguas claras ideales para bucear."},
-    en: {nombre:"Sosúa Beach", tipo:"Beach", desc:"Golden sand and clear waters perfect for diving."}
-  },
-  {
-    coords: [18.693, -68.429],
-    es: {nombre:"Playa Bávaro", tipo:"Playa", desc:"Una de las playas más famosas de Punta Cana."},
-    en: {nombre:"Bavaro Beach", tipo:"Beach", desc:"One of Punta Cana’s most famous beaches."}
-  },
-  {
-    coords: [18.522, -68.363],
-    es: {nombre:"Hoyo Azul", tipo:"Cenote", desc:"Piscina natural azul intenso en Scape Park."},
-    en: {nombre:"Hoyo Azul", tipo:"Cenote", desc:"Natural blue pool inside Scape Park."}
-  }
-];
+// Cargar lugares desde archivo externo
+fetch('lugares.json')
+  .then(resp=>resp.json())
+  .then(data=>{
+    window.lugares=data;
+    mostrarLugares();
+  });
 
-// ======= FUNCIONES =======
-function mostrarLugares() {
-  map.eachLayer(l => { if (l instanceof L.Marker) map.removeLayer(l); });
-  lugares.forEach(lugar => {
-    const t = lang === "es" ? lugar.es : lugar.en;
-    const marker = L.marker(lugar.coords).addTo(map);
-    marker.bindTooltip(t.nombre, {permanent:true, direction:'top', offset:[0,-10]});
+function mostrarLugares(){
+  map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});
+  lugares.forEach(l=>{
+    const info=lang==="es"?l.es:l.en;
+    const marker=L.marker(l.coords).addTo(map);
+    marker.bindTooltip(info.nombre,{permanent:true,direction:"top",offset:[0,-10]});
     marker.bindPopup(`
-      <b>${t.nombre}</b><br>
-      ${t.tipo}<br>
-      ${t.desc}<br>
-      <button class="popup-btn" onclick="ruta(${lugar.coords[0]},${lugar.coords[1]})">
-        ${lang === "es" ? "Cómo llegar" : "Get directions"}
+      <b>${info.nombre}</b><br>
+      <i>${info.tipo}</i><br>${info.desc}<br>
+      <button class="popup-btn" onclick="ruta(${l.coords[0]},${l.coords[1]})">
+        ${lang==="es"?"Cómo llegar":"Get directions"}
       </button>
     `);
   });
 }
 
-function ruta(lat, lon) {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      const url = `https://www.google.com/maps/dir/${pos.coords.latitude},${pos.coords.longitude}/${lat},${lon}`;
-      window.open(url, "_blank");
-    }, () => window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank"));
-  } else {
-    window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
+function ruta(lat,lon){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const url=`https://www.google.com/maps/dir/${pos.coords.latitude},${pos.coords.longitude}/${lat},${lon}`;
+      window.open(url,"_blank");
+    },()=>window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank"));
+  }else{
+    window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank");
   }
 }
 
-document.getElementById("langBtn").onclick = () => {
-  lang = lang === "es" ? "en" : "es";
-  document.getElementById("langBtn").innerText = lang === "es" ? "English" : "Español";
-  document.querySelector("header h1").innerText = lang === "es" ? "🌴 ExploraRD — Mapa Turístico" : "🌴 ExploreDR — Tourist Map";
+document.getElementById("langBtn").onclick=()=>{
+  lang=lang==="es"?"en":"es";
+  document.getElementById("langBtn").innerText=lang==="es"?"English":"Español";
+  document.querySelector("header h1").innerText=lang==="es"
+    ?"🌴 Explora Puerto Plata — Mapa Turístico"
+    :"🌴 Explore Puerto Plata — Tourist Map";
   mostrarLugares();
 };
-
-mostrarLugares();
 </script>
 </body>
 </html>
+[
+  {"coords":[19.773,-70.698],"es":{"nombre":"Teleférico de Puerto Plata","tipo":"Mirador","desc":"Vista panorámica desde el monte Isabel de Torres."},"en":{"nombre":"Puerto Plata Cable Car","tipo":"Viewpoint","desc":"Panoramic view from Isabel de Torres mountain."}},
+  {"coords":[19.755,-70.519],"es":{"nombre":"Playa Sosúa","tipo":"Playa","desc":"Arena dorada y aguas claras ideales para bucear."},"en":{"nombre":"Sosúa Beach","tipo":"Beach","desc":"Golden sand and clear waters perfect for diving."}},
+  {"coords":[19.757,-70.520],"es":{"nombre":"Restaurante Waterfront","tipo":"Restaurante","desc":"Cena frente al mar con platos caribeños."},"en":{"nombre":"Waterfront Restaurant","tipo":"Restaurant","desc":"Seaside dining with Caribbean flavors."}},
+  {"coords":[19.841,-70.767],"es":{"nombre":"Amber Cove","tipo":"Puerto Turístico","desc":"Terminal de cruceros moderna en Cofresí."},"en":{"nombre":"Amber Cove","tipo":"Cruise Port","desc":"Modern cruise terminal in Cofresí."}},
+  {"coords":[19.793,-70.730],"es":{"nombre":"Fortaleza San Felipe","tipo":"Monumento Histórico","desc":"Fuerte del siglo XVI con museo y vista al mar."},"en":{"nombre":"Fort San Felipe","tipo":"Historical Site","desc":"16th-century fortress with museum and ocean view."}},
+  {"coords":[19.774,-70.699],"es":{"nombre":"Malecón de Puerto Plata","tipo":"Paseo Marítimo","desc":"Camino costero con bares, música y vistas."},"en":{"nombre":"Puerto Plata Boardwalk","tipo":"Seaside Walk","desc":"Coastal path with bars, music and ocean views."}},
+  {"coords":[19.790,-70.690],"es":{"nombre":"Museo del Ámbar","tipo":"Museo","desc":"Exposición de piedras preciosas y fósiles en ámbar."},"en":{"nombre":"Amber Museum","tipo":"Museum","desc":"Exhibition of gemstones and amber fossils."}},
+  {"coords":[19.745,-70.564],"es":{"nombre":"Ocean World Adventure Park","tipo":"Parque Acuático","desc":"Shows con delfines y vida marina."},"en":{"nombre":"Ocean World Adventure Park","tipo":"Aquatic Park","desc":"Dolphin shows and marine life exhibits."}},
+  {"coords":[19.757,-70.520],"es":{"nombre":"Casa Marina Beach","tipo":"Resort","desc":"Resort todo incluido con playa privada."},"en":{"nombre":"Casa Marina Beach Resort","tipo":"Resort","desc":"All-inclusive resort with private beach."}},
+  {"coords":[19.777,-70.689],"es":{"nombre":"Parque Central","tipo":"Plaza","desc":"Centro histórico con arquitectura victoriana."},"en":{"nombre":"Central Park","tipo":"Square","desc":"Historic center with Victorian architecture."}},
+  {"coords":[19.762,-70.682],"es":{"nombre":"Catedral San Felipe Apóstol","tipo":"Iglesia","desc":"Templo neogótico icónico del centro."},"en":{"nombre":"St. Philip the Apostle Cathedral","tipo":"Church","desc":"Iconic neo-gothic temple downtown."}},
+  {"coords":[19.673,-70.490],"es":{"nombre":"Playa Cabarete","tipo":"Playa","desc":"Ideal para surf, kitesurf y vida nocturna."},"en":{"nombre":"Cabarete Beach","tipo":"Beach","desc":"Ideal for surfing, kitesurfing and nightlife."}},
+  {"coords":[19.662,-70.487],"es":{"nombre":"La Casita de Papi","tipo":"Restaurante","desc":"Restaurante francés-caribeño en Cabarete."},"en":{"nombre":"La Casita de Papi","tipo":"Restaurant","desc":"French-Caribbean restaurant in Cabarete."}},
+  {"coords":[19.662,-70.500],"es":{"nombre":"Encuentro Beach","tipo":"Playa","desc":"Famosa por sus olas perfectas para surfistas."},"en":{"nombre":"Encuentro Beach","tipo":"Beach","desc":"Famous for perfect surfing waves."}},
+  {"coords":[19.769,-70.727],"es":{"nombre":"La Puntilla del Malecón","tipo":"Mirador","desc":"Punto panorámico al final del malecón."},"en":{"nombre":"La Puntilla Viewpoint","tipo":"Viewpoint","desc":"Panoramic point at the end of the boardwalk."}},
+  {"coords":[19.789,-70.730],"es":{"nombre":"Restaurante Le Papillon","tipo":"Restaurante","desc":"Alta cocina europea en Cofresí."},"en":{"nombre":"Le Papillon Restaurant","tipo":"Restaurant","desc":"Fine European dining in Cofresí."}},
+  {"coords":[19.698,-70.587],"es":{"nombre":"Monkey Jungle","tipo":"Aventura","desc":"Tirolesa y santuario de monos."},"en":{"nombre":"Monkey Jungle","tipo":"Adventure","desc":"Zipline and monkey sanctuary."}},
+  {"coords":[19.805,-70.739],"es":{"nombre":"Loma Isabel de Torres","tipo":"Montaña","desc":"Montaña con jardín botánico y vistas únicas."},"en":{"nombre":"Isabel de Torres Mountain","tipo":"Mountain","desc":"Mountain with botanical garden and panoramic views."}},
+  {"coords":[19.781,-70.693],"es":{"nombre":"Pico Isabel","tipo":"Sendero","desc":"Ruta de senderismo al teleférico."},"en":{"nombre":"Isabel Trail","tipo":"Hiking Trail","desc":"Hiking route up to the cable car."}},
+  {"coords":[19.771,-70.695],"es":{"nombre":"Parque de la Restauración","tipo":"Plaza","desc":"Plaza dedicada a héroes dominicanos."},"en":{"nombre":"Restoration Park","tipo":"Square","desc":"Square honoring Dominican heroes."}},
+  {"coords":[19.832,-70.757],"es":{"nombre":"Cofresí Beach","tipo":"Playa","desc":"Bahía tranquila con arena blanca."},"en":{"nombre":"Cofresi Beach","tipo":"Beach","desc":"Calm bay with white sand."}},
+  {"coords":[19.845,-70.760],"es":{"nombre":"Lifestyle Holidays Resort","tipo":"Hotel","desc":"Complejo turístico con villas y playa privada."},"en":{"nombre":"Lifestyle Holidays Resort","tipo":"Resort","desc":"Tourist complex with villas and private beach."}},
+  {"coords":[19.757,-70.519],"es":{"nombre":"El Flow Restaurant","tipo":"Restaurante","desc":"Comida local frente al mar en Sosúa."},"en":{"nombre":"El Flow Restaurant","tipo":"Restaurant","desc":"Local beachfront dining in Sosúa."}},
+  {"coords":[19.663,-70.488],"es":{"nombre":"Cabarete Caves","tipo":"Cueva","desc":"Cueva natural dentro del parque El Choco."},"en":{"nombre":"Cabarete Caves","tipo":"Cave","desc":"Natural cave inside El Choco park."}},
+  {"coords":[19.664,-70.490],"es":{"nombre":"Laguna de Cabarete","tipo":"Lago","desc":"Área ecológica ideal para kayak y senderismo."},"en":{"nombre":"Cabarete Lagoon","tipo":"Lagoon","desc":"Ecological area ideal for kayaking and hiking."}}
+]
