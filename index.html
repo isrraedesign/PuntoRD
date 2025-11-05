@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PuntoRD - Turismo Interactivo</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; }
+    header { background: #0a5c5a; color: white; text-align: center; padding: 15px; font-size: 22px; }
+    #map { height: 90vh; width: 100%; }
+    footer { text-align: center; padding: 10px; font-size: 14px; color: #555; }
+  </style>
+</head>
+<body>
+  <header>🗺️ PuntoRD - Guía Turística de República Dominicana</header>
+
+  <div id="map"></div>
+
+  <footer>© 2025 PuntoRD | Datos de OpenStreetMap</footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([18.7357, -70.1627], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    const puntosBuenos = [
+      { nombre: "Playa Bávaro", coords: [18.705, -68.451], tipo: "bueno" },
+      { nombre: "Zona Colonial", coords: [18.470, -69.890], tipo: "bueno" },
+      { nombre: "Samaná", coords: [19.205, -69.332], tipo: "bueno" },
+    ];
+
+    const zonasPeligrosas = [
+      { nombre: "Zona de precaución 1", coords: [18.480, -69.950] },
+      { nombre: "Zona de precaución 2", coords: [18.520, -70.050] }
+    ];
+
+    puntosBuenos.forEach(p => {
+      L.marker(p.coords, { title: p.nombre })
+        .addTo(map)
+        .bindPopup(`🏖️ <b>${p.nombre}</b><br>Lugar recomendado para visitar.`);
+    });
+
+    zonasPeligrosas.forEach(z => {
+      L.circle(z.coords, { radius: 1000, color: "red", fillColor: "#f03", fillOpacity: 0.5 })
+        .addTo(map)
+        .bindPopup(`⚠️ <b>${z.nombre}</b><br>Zona no recomendada para turistas.`);
+    });
+  </script>
+</body>
+</html>
