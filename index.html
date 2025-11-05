@@ -1,321 +1,170 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>PuntoRD — Top 25 por provincia (dinámico)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Explora RD — Puerto Plata & Punta Cana</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
 <style>
-  :root{
-    --accent:#00897b; --accent-dark:#00695c; --muted:#6b7c7a;
-  }
-  body{margin:0;font-family:Inter,system-ui,Arial,Helvetica,sans-serif;background:#f6fbfb;color:#032;display:flex;flex-direction:column;height:100vh}
-  header{background:linear-gradient(90deg,var(--accent-dark),var(--accent));color:#fff;padding:12px 16px;font-weight:700;display:flex;align-items:center;gap:12px}
-  header h1{font-size:1.05rem;margin:0}
-  #app{display:flex;flex:1;min-height:0}
-  #sidebar{width:340px;background:#fff;border-right:1px solid #e6efee;overflow:auto;padding:14px;box-shadow:2px 0 8px rgba(0,0,0,0.04)}
-  #map{flex:1;min-height:0}
-  select,input,button{width:100%;padding:8px;border-radius:8px;border:1px solid #d7e6e4;margin-top:8px;background:#fff;font-size:14px}
-  .controls-row{display:flex;gap:8px}
-  .controls-row > *{flex:1}
-  .actions{display:flex;gap:8px;margin-top:8px}
-  button.primary{background:var(--accent);color:#fff;border:none}
-  .meta{font-size:13px;color:var(--muted);margin-top:6px}
-  .list{margin-top:12px}
-  .item{padding:10px;border-radius:8px;border:1px solid #eef6f5;margin-bottom:8px;cursor:pointer;background:#fff}
-  .item .title{font-weight:700;color:var(--accent-dark)}
-  .item .sub{font-size:13px;color:var(--muted);margin-top:4px}
-  .badge{display:inline-block;background:#e8f6f4;color:var(--accent-dark);padding:4px 8px;border-radius:999px;font-size:12px;margin-right:6px}
-  .legend{font-size:13px;color:var(--muted);margin-top:10px}
-  footer{padding:8px;text-align:center;background:#f1f9f8;font-size:13px;color:var(--muted)}
-  @media(max-width:900px){#sidebar{width:100%;height:280px;order:2} #map{order:1;height:calc(100vh - 360px)}}
+  body { margin:0; font-family: 'Poppins', sans-serif; background:#f4f9f8; display:flex; flex-direction:column; height:100vh; color:#023; }
+  header { background:linear-gradient(90deg,#00796b,#009688); color:white; padding:12px 20px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
+  header h1 { font-size:1.1rem; margin:0; }
+  header button { background:#004d40; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
+  #app { display:flex; flex:1; min-height:0; }
+  #sidebar { width:340px; background:white; overflow:auto; border-right:1px solid #cfe8e5; padding:12px; }
+  #map { flex:1; }
+  .place { border:1px solid #e0f0ed; border-radius:8px; padding:10px; margin-bottom:8px; background:#fff; cursor:pointer; }
+  .place:hover { background:#f0fffc; }
+  .place .title { font-weight:bold; color:#00796b; }
+  .place .type { font-size:13px; color:#666; }
+  select { width:100%; padding:6px; border-radius:6px; border:1px solid #bfe1dd; margin-bottom:10px; }
+  footer { text-align:center; background:#eaf5f4; padding:8px; font-size:13px; color:#555; }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🌴 PuntoRD — Top 25 lugares por provincia</h1>
+  <h1>🏝️ Explora RD — Puerto Plata & Punta Cana</h1>
+  <button id="langBtn">English</button>
 </header>
 
 <div id="app">
-  <aside id="sidebar">
-    <label for="provincia">Selecciona provincia (elige 1)</label>
-    <select id="provincia">
-      <option value="">-- Selecciona --</option>
-      <option>Santo Domingo</option><option>La Altagracia</option><option>La Romana</option><option>Puerto Plata</option>
-      <option>Samaná</option><option>Barahona</option><option>La Vega</option><option>Santiago</option>
-      <option>Pedernales</option><option>Monseñor Nouel</option><option>San Cristóbal</option><option>San Pedro de Macorís</option>
-      <option>San Juan</option><option>Monte Plata</option><option>El Seibo</option><option>Hato Mayor</option>
-      <option>Peravia</option><option>Azua</option><option>Valverde</option><option>Santiago Rodríguez</option>
-      <option>Montecristi</option><option>Duarte</option><option>Espaillat</option><option>María Trinidad Sánchez</option>
-      <option>Sánchez Ramírez</option><option>Distrito Nacional</option><option>Independencia</option><option>Elías Piña</option>
-      <option>Dajabón</option><option>Hermanas Mirabal</option><option>Barahona</option>
+  <div id="sidebar">
+    <select id="city">
+      <option value="puertoplata">🇩🇴 Puerto Plata</option>
+      <option value="puntacana">🇩🇴 Punta Cana</option>
     </select>
-
-    <div style="margin-top:10px" class="controls-row">
-      <input id="searchTxt" placeholder="Buscar en resultados (nombre, tag)"/>
-      <button id="btnLoad" class="primary">Cargar top 25</button>
-    </div>
-
-    <div class="actions">
-      <button id="btnShowAll">Mostrar todo (más)</button>
-      <button id="btnClear">Limpiar mapa</button>
-    </div>
-
-    <div class="meta">Los POI provienen de OpenStreetMap (Overpass). Se seleccionan los 25 más relevantes (scoring automático).</div>
-    <div class="legend">Consejo: selecciona 1 provincia y pulsa "Cargar top 25". Usa "Mostrar todo" solo si quieres ver todos los POI.</div>
-
-    <div class="list" id="list"></div>
-  </aside>
-
+    <div id="places"></div>
+  </div>
   <div id="map"></div>
 </div>
 
-<footer>© 2025 PuntoRD — Datos: OpenStreetMap / Overpass API — Cache local para velocidad</footer>
+<footer>© 2025 Explora RD — Datos turísticos recopilados manualmente y de OpenStreetMap</footer>
 
-<!-- libs -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
 <script>
-/* ====== Configuración y helpers ====== */
-const map = L.map('map', {zoomControl:true}).setView([18.7357,-70.1627], 8);
+const langBtn = document.getElementById("langBtn");
+let currentLang = "es";
+
+const map = L.map('map').setView([19.8, -70.7], 10);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution: '© OpenStreetMap & CARTO'
+  attribution:'© OpenStreetMap & CARTO'
 }).addTo(map);
 
-const cluster = L.markerClusterGroup({chunkedLoading:true});
+const cluster = L.markerClusterGroup();
 map.addLayer(cluster);
 
-// cache: localStorage key + timestamp (24h)
-const CACHE_TTL = 1000*60*60*24; // 24h
-function cacheSet(key, value){ const data = {ts:Date.now(), v:value}; localStorage.setItem('puntoRD_'+key, JSON.stringify(data)); }
-function cacheGet(key){ try{ const s = localStorage.getItem('puntoRD_'+key); if(!s) return null; const o = JSON.parse(s); if(Date.now()-o.ts > CACHE_TTL) { localStorage.removeItem('puntoRD_'+key); return null } return o.v }catch(e){return null} }
+// Datos: 25 lugares más visitados en cada provincia
+const data = {
+  puertoplata: [
+    {name:"Teleférico de Puerto Plata", type:"atracción / mirador", lat:19.773, lon:-70.698},
+    {name:"Playa Dorada", type:"playa", lat:19.779, lon:-70.649},
+    {name:"Fortaleza San Felipe", type:"histórico / museo", lat:19.801, lon:-70.704},
+    {name:"Malecón de Puerto Plata", type:"paseo costero", lat:19.800, lon:-70.695},
+    {name:"Museo del Ámbar", type:"museo", lat:19.792, lon:-70.694},
+    {name:"27 Charcos de Damajagua", type:"río / aventura", lat:19.756, lon:-70.842},
+    {name:"Ocean World Adventure Park", type:"parque / acuario", lat:19.819, lon:-70.728},
+    {name:"Cofresí Beach", type:"playa", lat:19.818, lon:-70.729},
+    {name:"Parque Central Independencia", type:"plaza histórica", lat:19.793, lon:-70.694},
+    {name:"Museo Gregorio Luperón", type:"museo histórico", lat:19.792, lon:-70.694},
+    {name:"Amber Cove Cruise Port", type:"puerto turístico", lat:19.841, lon:-70.767},
+    {name:"Playa Sosúa", type:"playa", lat:19.755, lon:-70.519},
+    {name:"Cabarete Beach", type:"playa / surf", lat:19.75, lon:-70.41},
+    {name:"Monkey Jungle", type:"aventura / naturaleza", lat:19.725, lon:-70.51},
+    {name:"Laguna de Cabarete y Goleta", type:"reserva natural", lat:19.74, lon:-70.4},
+    {name:"Parque Nacional Isabel de Torres", type:"montaña / reserva", lat:19.775, lon:-70.698},
+    {name:"Casa Museo General Gregorio Luperón", type:"histórico", lat:19.792, lon:-70.694},
+    {name:"Kviar Show Disco & Casino", type:"entretenimiento", lat:19.783, lon:-70.677},
+    {name:"Villas Cofresí", type:"villa turística", lat:19.818, lon:-70.727},
+    {name:"Hotel Casa Colonial Beach & Spa", type:"hotel 5★", lat:19.788, lon:-70.645},
+    {name:"Brugal Rum Factory", type:"turismo industrial", lat:19.789, lon:-70.676},
+    {name:"El Bergantín Beach", type:"playa", lat:19.777, lon:-70.608},
+    {name:"Taino Bay", type:"terminal de cruceros", lat:19.802, lon:-70.702},
+    {name:"Río Bajabonico", type:"río / naturaleza", lat:19.85, lon:-70.85},
+    {name:"Playa Long Beach", type:"playa urbana", lat:19.800, lon:-70.684},
+  ],
+  puntacana: [
+    {name:"Playa Bávaro", type:"playa principal", lat:18.693, lon:-68.429},
+    {name:"Isla Saona", type:"isla / excursión", lat:18.153, lon:-68.724},
+    {name:"Parque Ecológico Ojos Indígenas", type:"reserva natural", lat:18.504, lon:-68.372},
+    {name:"Coco Bongo Punta Cana", type:"discoteca / show", lat:18.695, lon:-68.433},
+    {name:"Hard Rock Hotel & Casino", type:"hotel / casino", lat:18.733, lon:-68.468},
+    {name:"Dolphin Explorer", type:"parque acuático", lat:18.67, lon:-68.397},
+    {name:"Hoyo Azul", type:"cenote / piscina natural", lat:18.522, lon:-68.363},
+    {name:"Scape Park", type:"parque de aventura", lat:18.522, lon:-68.362},
+    {name:"Marina Cap Cana", type:"marina / yates", lat:18.493, lon:-68.391},
+    {name:"Playa Macao", type:"playa / surf", lat:18.764, lon:-68.51},
+    {name:"Altos de Chavón", type:"aldea artística", lat:18.415, lon:-68.888},
+    {name:"Catalonia Bavaro Beach Resort", type:"resort", lat:18.682, lon:-68.386},
+    {name:"Los Corales Beach", type:"playa", lat:18.689, lon:-68.416},
+    {name:"Downtown Punta Cana", type:"centro comercial / ocio", lat:18.688, lon:-68.422},
+    {name:"BlueMall Punta Cana", type:"tiendas / shopping", lat:18.524, lon:-68.373},
+    {name:"Juanillo Beach", type:"playa / resort", lat:18.491, lon:-68.398},
+    {name:"Reserva Ecológica Punta Cana", type:"reserva / senderismo", lat:18.505, lon:-68.373},
+    {name:"Playa Blanca", type:"playa", lat:18.51, lon:-68.38},
+    {name:"Restaurante La Yola", type:"restaurante frente al mar", lat:18.505, lon:-68.377},
+    {name:"Imagine Cave Disco", type:"discoteca en cueva", lat:18.699, lon:-68.441},
+    {name:"Manatí Park", type:"parque temático", lat:18.707, lon:-68.422},
+    {name:"Bávaro Adventure Park", type:"aventura / tirolesa", lat:18.685, lon:-68.436},
+    {name:"Playa Arena Gorda", type:"playa", lat:18.732, lon:-68.468},
+    {name:"Iberostar Grand Bávaro", type:"hotel 5★", lat:18.73, lon:-68.465},
+    {name:"Lago Enriquillo (excursión cercana)", type:"natural", lat:18.51, lon:-68.45},
+  ]
+};
 
-// UI
-const provinciaEl = document.getElementById('provincia');
-const btnLoad = document.getElementById('btnLoad');
-const listEl = document.getElementById('list');
-const searchTxt = document.getElementById('searchTxt');
-const btnShowAll = document.getElementById('btnShowAll');
-const btnClear = document.getElementById('btnClear');
-let lastItems = []; // items cargados
-let lastProv = '';
-
-// Overpass query builder: busca nodos/ways/relations con tags relevantes en el area por nombre
-function buildQuery(areaName){
-  // categories: amenity, tourism, shop, leisure, historic, natural, waterway
-  const q = `[out:json][timeout:90];
-    area["name"="${areaName}"]->.searchArea;
-    (
-      node(area.searchArea)[amenity];
-      way(area.searchArea)[amenity];
-      relation(area.searchArea)[amenity];
-
-      node(area.searchArea)[tourism];
-      way(area.searchArea)[tourism];
-      relation(area.searchArea)[tourism];
-
-      node(area.searchArea)[shop];
-      way(area.searchArea)[shop];
-      relation(area.searchArea)[shop];
-
-      node(area.searchArea)[leisure];
-      way(area.searchArea)[leisure];
-      relation(area.searchArea)[leisure];
-
-      node(area.searchArea)[historic];
-      way(area.searchArea)[historic];
-      relation(area.searchArea)[historic];
-
-      node(area.searchArea)[natural];
-      way(area.searchArea)[natural];
-      relation(area.searchArea)[natural];
-
-      node(area.searchArea)[waterway];
-      way(area.searchArea)[waterway];
-      relation(area.searchArea)[waterway];
-    );
-    out center tags;`;
-  return q;
-}
-
-// fetch Overpass and normalize
-async function fetchOverpass(areaName){
-  const cached = cacheGet(areaName);
-  if(cached){ console.log('Usando cache para', areaName); return cached; }
-
-  const q = buildQuery(areaName);
-  const resp = await fetch('https://overpass-api.de/api/interpreter', {method:'POST', body: q});
-  if(!resp.ok) throw new Error('Overpass error ' + resp.status);
-  const data = await resp.json();
-  const items = (data.elements||[]).map(e=>{
-    const lat = e.lat || (e.center && e.center.lat);
-    const lon = e.lon || (e.center && e.center.lon);
-    const tags = e.tags || {};
-    const name = tags.name || tags['name:es'] || tags['name:en'] || null;
-    const en = tags['name:en'] || tags.name;
-    return { id: e.type + '/' + e.id, lat, lon, tags, name, en };
-  }).filter(i => i.lat && i.lon);
-  cacheSet(areaName, items);
-  return items;
-}
-
-/* scoring: asigna puntos segun tags para obtener "top" */
-function scoreItem(it){
-  const t = it.tags || {};
-  let s = 0;
-  if(t.tourism) s += 8;
-  if(t.historic) s += 6;
-  if(t.amenity) s += 6;
-  if(t.shop) s += 3;
-  if(t.leisure) s += 4;
-  if(t.natural) s += 5;
-  if(t.waterway) s += 4;
-  if(t['name:en']) s += 1;
-  if(t.wikipedia) s += 5;
-  if(t.wikidata) s += 4;
-  // boost for common tourist tags
-  const tagstr = JSON.stringify(t).toLowerCase();
-  if(tagstr.includes('beach')) s += 5;
-  if(tagstr.includes('viewpoint')) s += 4;
-  if(tagstr.includes('museum')) s += 4;
-  if(tagstr.includes('hotel')) s += 4;
-  if(tagstr.includes('restaurant')||tagstr.includes('cafe')||tagstr.includes('bar')) s += 3;
-  return s;
-}
-
-// determine friendly type label
-function kindFromTags(tags){
-  if(!tags) return 'Otro';
-  if(tags.tourism) return tags.tourism;
-  if(tags.amenity) return tags.amenity;
-  if(tags.natural) return tags.natural;
-  if(tags.shop) return tags.shop;
-  if(tags.waterway) return tags.waterway;
-  if(tags.historic) return 'historic';
-  return 'other';
-}
-
-// render top N items (25 by default)
-function renderList(items, topN=25){
-  listEl.innerHTML = '';
-  if(!items || items.length===0){ listEl.innerHTML = '<div class="meta">No se encontraron POI para esta provincia.</div>'; return; }
-  // create DOM items
-  items.slice(0, topN).forEach((it, idx) => {
-    const name = it.name || it.en || '(sin nombre)';
-    const kind = kindFromTags(it.tags);
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `<div><span class="badge">#${idx+1}</span><span class="title">${escapeHtml(name)}</span></div><div class="sub">${escapeHtml(kind)} • ${escapeHtml(it.tags.city||it.tags['addr:city']||'')}</div>`;
-    div.onclick = () => {
-      map.setView([it.lat, it.lon], 16);
-      // open popup if marker exists
-      if(it._marker) it._marker.openPopup();
-    };
-    listEl.appendChild(div);
-  });
-}
-
-/* render markers (cluster) */
-function renderMarkers(items, topN=25){
+// Mostrar lugares en mapa
+function showPlaces(cityKey){
   cluster.clearLayers();
-  if(!items || items.length===0) return;
-  items.slice(0, topN).forEach((it, idx)=>{
-    const name = it.name || it.en || '(sin nombre)';
-    const kind = kindFromTags(it.tags);
-    const color = pickColor(kind);
-    const marker = L.circleMarker([it.lat,it.lon], {radius: idx<5?10:6, color, fillColor:color, fillOpacity:0.95, weight:1});
-    marker.bindPopup(`<b>${escapeHtml(name)}</b><br><small>${escapeHtml(kind)}</small><br><small>${escapeHtml(summaryTags(it.tags))}</small>`);
-    marker.on('click', ()=>{}); // placeholder
+  const list = document.getElementById("places");
+  list.innerHTML = "";
+  const items = data[cityKey];
+  const bounds = [];
+
+  items.forEach(p=>{
+    const color = p.type.includes("playa") ? "#0077ff" :
+                  p.type.includes("río") || p.type.includes("cenote") ? "#00bcd4" :
+                  p.type.includes("hotel") || p.type.includes("villa") ? "#8e24aa" :
+                  p.type.includes("museo") || p.type.includes("histórico") ? "#fbc02d" :
+                  "#009688";
+
+    const marker = L.circleMarker([p.lat,p.lon],{radius:8,fillColor:color,color:"#fff",fillOpacity:0.95,weight:2});
+    marker.bindPopup(`<b>${p.name}</b><br>${p.type}`);
     cluster.addLayer(marker);
-    it._marker = marker;
+    bounds.push([p.lat,p.lon]);
+
+    const div = document.createElement("div");
+    div.className="place";
+    div.innerHTML=`<div class="title">${p.name}</div><div class="type">${p.type}</div>`;
+    div.onclick=()=>{ map.setView([p.lat,p.lon],15); marker.openPopup(); };
+    list.appendChild(div);
   });
-  // fit to cluster bounds
-  try{
-    const bounds = cluster.getBounds();
-    if(bounds.isValid()) map.fitBounds(bounds.pad(0.4));
-  }catch(e){}
+
+  if(bounds.length>0){ map.fitBounds(bounds,{padding:[40,40]}); }
 }
 
-/* helper pick color by kind */
-function pickColor(kind){
-  kind = (kind||'').toLowerCase();
-  if(kind.includes('beach') || kind.includes('natural') || kind.includes('coast')) return '#0d6efd'; // blue
-  if(kind.includes('river')||kind.includes('waterway')) return '#0b8f8c';
-  if(kind.includes('restaurant')||kind.includes('cafe')||kind.includes('bar')) return '#ff7043';
-  if(kind.includes('hotel')||kind.includes('hostel')) return '#7e57c2';
-  if(kind.includes('shop')||kind.includes('market')) return '#2e7d32';
-  if(kind.includes('museum')||kind.includes('attraction')||kind.includes('viewpoint')||kind.includes('historic')) return '#f4c542';
-  return '#546e7a';
-}
+// Idioma español/inglés (simple)
+langBtn.onclick=()=>{
+  currentLang = currentLang === "es" ? "en" : "es";
+  langBtn.innerText = currentLang === "es" ? "English" : "Español";
+  document.querySelector("header h1").innerText = currentLang === "es" ? "🏝️ Explora RD — Puerto Plata & Punta Cana" : "🏝️ Explore DR — Puerto Plata & Punta Cana";
+  document.querySelector("footer").innerText = currentLang === "es" ?
+    "© 2025 Explora RD — Datos turísticos recopilados manualmente y de OpenStreetMap" :
+    "© 2025 Explore DR — Tourist data collected manually and from OpenStreetMap";
+};
 
-function summaryTags(tags){
-  if(!tags) return '';
-  const parts = [];
-  ['amenity','tourism','shop','historic','leisure','natural','waterway'].forEach(k=>{ if(tags[k]) parts.push(`${k}:${tags[k]}`) });
-  return parts.slice(0,4).join(' • ');
-}
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Selector de ciudad
+document.getElementById("city").onchange=(e)=>{
+  showPlaces(e.target.value);
+};
 
-/* ====== Usuario pulsa "Cargar top 25" ====== */
-btnLoad.addEventListener('click', async ()=>{
-  const prov = provinciaEl.value;
-  if(!prov){ alert('Selecciona una provincia primero'); return; }
-  btnLoad.disabled = true;
-  btnLoad.innerText = 'Cargando...';
-  try{
-    lastProv = prov;
-    // load from Overpass (or cache) many items
-    const items = await fetchOverpass(prov);
-    // score and sort
-    const scored = items.map(i=> ({...i, score: scoreItem(i)})).sort((a,b)=>b.score - a.score);
-    // deduplicate by rounded coords+name
-    const uniq = [];
-    const seen = new Set();
-    for(const it of scored){
-      const key = `${Math.round(it.lat*10000)}|${Math.round(it.lon*10000)}|${(it.name||'').toLowerCase().slice(0,30)}`;
-      if(seen.has(key)) continue;
-      seen.add(key);
-      uniq.push(it);
-    }
-    lastItems = uniq;
-    renderMarkers(uniq, 25);
-    renderList(uniq, 25);
-  }catch(err){
-    alert('Error cargando datos: ' + err.message);
-    console.error(err);
-  }finally{
-    btnLoad.disabled = false;
-    btnLoad.innerText = 'Cargar top 25';
-  }
-});
-
-// Mostrar todo (sin top limit) — advertencia de muchos marcadores
-btnShowAll.addEventListener('click', async ()=>{
-  if(!lastProv){ alert('Primero carga top 25 de una provincia'); return; }
-  if(!confirm('Mostrar todos los POI detectados puede poner muchos marcadores y tardar. ¿Continuar?')) return;
-  renderMarkers(lastItems, lastItems.length);
-  renderList(lastItems, lastItems.length);
-});
-
-// Buscar en resultados (filtro en la lista/markers)
-searchTxt.addEventListener('input', ()=> {
-  const q = searchTxt.value.trim().toLowerCase();
-  if(!q){ renderMarkers(lastItems,25); renderList(lastItems,25); return; }
-  const filtered = lastItems.filter(it => ((it.name||'') + JSON.stringify(it.tags||{})).toLowerCase().includes(q));
-  renderMarkers(filtered,50);
-  renderList(filtered,50);
-});
-
-// limpiar
-btnClear.addEventListener('click', ()=>{ cluster.clearLayers(); listEl.innerHTML=''; lastItems=[]; lastProv=''; provinciaEl.value=''; map.setView([18.7357,-70.1627],8); });
-
-// inicial: nada cargado
+// Mostrar Puerto Plata por defecto
+showPlaces("puertoplata");
 </script>
+
 </body>
 </html>
