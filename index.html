@@ -3,168 +3,71 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Explora RD — Puerto Plata & Punta Cana</title>
+<title>ExploraRD - Guía Turística Interactiva</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-
 <style>
-  body { margin:0; font-family: 'Poppins', sans-serif; background:#f4f9f8; display:flex; flex-direction:column; height:100vh; color:#023; }
-  header { background:linear-gradient(90deg,#00796b,#009688); color:white; padding:12px 20px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; }
-  header h1 { font-size:1.1rem; margin:0; }
-  header button { background:#004d40; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; }
-  #app { display:flex; flex:1; min-height:0; }
-  #sidebar { width:340px; background:white; overflow:auto; border-right:1px solid #cfe8e5; padding:12px; }
-  #map { flex:1; }
-  .place { border:1px solid #e0f0ed; border-radius:8px; padding:10px; margin-bottom:8px; background:#fff; cursor:pointer; }
-  .place:hover { background:#f0fffc; }
-  .place .title { font-weight:bold; color:#00796b; }
-  .place .type { font-size:13px; color:#666; }
-  select { width:100%; padding:6px; border-radius:6px; border:1px solid #bfe1dd; margin-bottom:10px; }
-  footer { text-align:center; background:#eaf5f4; padding:8px; font-size:13px; color:#555; }
+  body {margin:0;font-family:'Poppins',sans-serif;}
+  #map {height:100vh;}
+  #langBtn {position:absolute;top:10px;right:10px;z-index:1000;padding:6px 10px;border:none;background:#00796b;color:white;border-radius:6px;cursor:pointer;}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🏝️ Explora RD — Puerto Plata & Punta Cana</h1>
-  <button id="langBtn">English</button>
-</header>
-
-<div id="app">
-  <div id="sidebar">
-    <select id="city">
-      <option value="puertoplata">🇩🇴 Puerto Plata</option>
-      <option value="puntacana">🇩🇴 Punta Cana</option>
-    </select>
-    <div id="places"></div>
-  </div>
-  <div id="map"></div>
-</div>
-
-<footer>© 2025 Explora RD — Datos turísticos recopilados manualmente y de OpenStreetMap</footer>
+<button id="langBtn">English</button>
+<div id="map"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 <script>
-const langBtn = document.getElementById("langBtn");
-let currentLang = "es";
+let lang="es";
+const map=L.map("map").setView([18.7,-70.2],7);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:"© OpenStreetMap"}).addTo(map);
 
-const map = L.map('map').setView([19.8, -70.7], 10);
-L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-  attribution:'© OpenStreetMap & CARTO'
-}).addTo(map);
+const lugares=[
+  {es:{nombre:"Teleférico de Puerto Plata",tipo:"Mirador",desc:"Vista panorámica desde la cima del monte Isabel de Torres"},
+   en:{nombre:"Puerto Plata Cable Car",tipo:"Viewpoint",desc:"Panoramic view from Isabel de Torres mountain"},
+   coords:[19.77,-70.69]},
+  {es:{nombre:"Playa Bávaro",tipo:"Playa",desc:"Arena blanca y mar turquesa en Punta Cana"},
+   en:{nombre:"Bavaro Beach",tipo:"Beach",desc:"White sand and turquoise sea in Punta Cana"},
+   coords:[18.69,-68.43]},
+  {es:{nombre:"Cascada El Limón",tipo:"Cascada",desc:"Hermosa cascada natural en Samaná"},
+   en:{nombre:"El Limón Waterfall",tipo:"Waterfall",desc:"Beautiful natural waterfall in Samaná"},
+   coords:[19.29,-69.40]},
+  {es:{nombre:"Bahía de las Águilas",tipo:"Playa",desc:"Una de las playas más vírgenes del Caribe"},
+   en:{nombre:"Bahía de las Águilas",tipo:"Beach",desc:"One of the most pristine beaches in the Caribbean"},
+   coords:[17.82,-71.55]}
+];
 
-const cluster = L.markerClusterGroup();
-map.addLayer(cluster);
-
-// Datos: 25 lugares más visitados en cada provincia
-const data = {
-  puertoplata: [
-    {name:"Teleférico de Puerto Plata", type:"atracción / mirador", lat:19.773, lon:-70.698},
-    {name:"Playa Dorada", type:"playa", lat:19.779, lon:-70.649},
-    {name:"Fortaleza San Felipe", type:"histórico / museo", lat:19.801, lon:-70.704},
-    {name:"Malecón de Puerto Plata", type:"paseo costero", lat:19.800, lon:-70.695},
-    {name:"Museo del Ámbar", type:"museo", lat:19.792, lon:-70.694},
-    {name:"27 Charcos de Damajagua", type:"río / aventura", lat:19.756, lon:-70.842},
-    {name:"Ocean World Adventure Park", type:"parque / acuario", lat:19.819, lon:-70.728},
-    {name:"Cofresí Beach", type:"playa", lat:19.818, lon:-70.729},
-    {name:"Parque Central Independencia", type:"plaza histórica", lat:19.793, lon:-70.694},
-    {name:"Museo Gregorio Luperón", type:"museo histórico", lat:19.792, lon:-70.694},
-    {name:"Amber Cove Cruise Port", type:"puerto turístico", lat:19.841, lon:-70.767},
-    {name:"Playa Sosúa", type:"playa", lat:19.755, lon:-70.519},
-    {name:"Cabarete Beach", type:"playa / surf", lat:19.75, lon:-70.41},
-    {name:"Monkey Jungle", type:"aventura / naturaleza", lat:19.725, lon:-70.51},
-    {name:"Laguna de Cabarete y Goleta", type:"reserva natural", lat:19.74, lon:-70.4},
-    {name:"Parque Nacional Isabel de Torres", type:"montaña / reserva", lat:19.775, lon:-70.698},
-    {name:"Casa Museo General Gregorio Luperón", type:"histórico", lat:19.792, lon:-70.694},
-    {name:"Kviar Show Disco & Casino", type:"entretenimiento", lat:19.783, lon:-70.677},
-    {name:"Villas Cofresí", type:"villa turística", lat:19.818, lon:-70.727},
-    {name:"Hotel Casa Colonial Beach & Spa", type:"hotel 5★", lat:19.788, lon:-70.645},
-    {name:"Brugal Rum Factory", type:"turismo industrial", lat:19.789, lon:-70.676},
-    {name:"El Bergantín Beach", type:"playa", lat:19.777, lon:-70.608},
-    {name:"Taino Bay", type:"terminal de cruceros", lat:19.802, lon:-70.702},
-    {name:"Río Bajabonico", type:"río / naturaleza", lat:19.85, lon:-70.85},
-    {name:"Playa Long Beach", type:"playa urbana", lat:19.800, lon:-70.684},
-  ],
-  puntacana: [
-    {name:"Playa Bávaro", type:"playa principal", lat:18.693, lon:-68.429},
-    {name:"Isla Saona", type:"isla / excursión", lat:18.153, lon:-68.724},
-    {name:"Parque Ecológico Ojos Indígenas", type:"reserva natural", lat:18.504, lon:-68.372},
-    {name:"Coco Bongo Punta Cana", type:"discoteca / show", lat:18.695, lon:-68.433},
-    {name:"Hard Rock Hotel & Casino", type:"hotel / casino", lat:18.733, lon:-68.468},
-    {name:"Dolphin Explorer", type:"parque acuático", lat:18.67, lon:-68.397},
-    {name:"Hoyo Azul", type:"cenote / piscina natural", lat:18.522, lon:-68.363},
-    {name:"Scape Park", type:"parque de aventura", lat:18.522, lon:-68.362},
-    {name:"Marina Cap Cana", type:"marina / yates", lat:18.493, lon:-68.391},
-    {name:"Playa Macao", type:"playa / surf", lat:18.764, lon:-68.51},
-    {name:"Altos de Chavón", type:"aldea artística", lat:18.415, lon:-68.888},
-    {name:"Catalonia Bavaro Beach Resort", type:"resort", lat:18.682, lon:-68.386},
-    {name:"Los Corales Beach", type:"playa", lat:18.689, lon:-68.416},
-    {name:"Downtown Punta Cana", type:"centro comercial / ocio", lat:18.688, lon:-68.422},
-    {name:"BlueMall Punta Cana", type:"tiendas / shopping", lat:18.524, lon:-68.373},
-    {name:"Juanillo Beach", type:"playa / resort", lat:18.491, lon:-68.398},
-    {name:"Reserva Ecológica Punta Cana", type:"reserva / senderismo", lat:18.505, lon:-68.373},
-    {name:"Playa Blanca", type:"playa", lat:18.51, lon:-68.38},
-    {name:"Restaurante La Yola", type:"restaurante frente al mar", lat:18.505, lon:-68.377},
-    {name:"Imagine Cave Disco", type:"discoteca en cueva", lat:18.699, lon:-68.441},
-    {name:"Manatí Park", type:"parque temático", lat:18.707, lon:-68.422},
-    {name:"Bávaro Adventure Park", type:"aventura / tirolesa", lat:18.685, lon:-68.436},
-    {name:"Playa Arena Gorda", type:"playa", lat:18.732, lon:-68.468},
-    {name:"Iberostar Grand Bávaro", type:"hotel 5★", lat:18.73, lon:-68.465},
-    {name:"Lago Enriquillo (excursión cercana)", type:"natural", lat:18.51, lon:-68.45},
-  ]
-};
-
-// Mostrar lugares en mapa
-function showPlaces(cityKey){
-  cluster.clearLayers();
-  const list = document.getElementById("places");
-  list.innerHTML = "";
-  const items = data[cityKey];
-  const bounds = [];
-
-  items.forEach(p=>{
-    const color = p.type.includes("playa") ? "#0077ff" :
-                  p.type.includes("río") || p.type.includes("cenote") ? "#00bcd4" :
-                  p.type.includes("hotel") || p.type.includes("villa") ? "#8e24aa" :
-                  p.type.includes("museo") || p.type.includes("histórico") ? "#fbc02d" :
-                  "#009688";
-
-    const marker = L.circleMarker([p.lat,p.lon],{radius:8,fillColor:color,color:"#fff",fillOpacity:0.95,weight:2});
-    marker.bindPopup(`<b>${p.name}</b><br>${p.type}`);
-    cluster.addLayer(marker);
-    bounds.push([p.lat,p.lon]);
-
-    const div = document.createElement("div");
-    div.className="place";
-    div.innerHTML=`<div class="title">${p.name}</div><div class="type">${p.type}</div>`;
-    div.onclick=()=>{ map.setView([p.lat,p.lon],15); marker.openPopup(); };
-    list.appendChild(div);
+// Función para mostrar los marcadores con nombre visible
+function mostrarLugares(){
+  map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l);});
+  lugares.forEach(l=>{
+    const texto=lang==="es"?l.es:l.en;
+    const marker=L.marker(l.coords).addTo(map)
+      .bindPopup(`<b>${texto.nombre}</b><br>${texto.tipo}<br>${texto.desc}<br><button onclick="abrirRuta(${l.coords[0]},${l.coords[1]})">${lang==="es"?"Cómo llegar":"Get directions"}</button>`)
+      .bindTooltip(texto.nombre,{permanent:true,direction:"top",offset:[0,-10]});
   });
-
-  if(bounds.length>0){ map.fitBounds(bounds,{padding:[40,40]}); }
 }
 
-// Idioma español/inglés (simple)
-langBtn.onclick=()=>{
-  currentLang = currentLang === "es" ? "en" : "es";
-  langBtn.innerText = currentLang === "es" ? "English" : "Español";
-  document.querySelector("header h1").innerText = currentLang === "es" ? "🏝️ Explora RD — Puerto Plata & Punta Cana" : "🏝️ Explore DR — Puerto Plata & Punta Cana";
-  document.querySelector("footer").innerText = currentLang === "es" ?
-    "© 2025 Explora RD — Datos turísticos recopilados manualmente y de OpenStreetMap" :
-    "© 2025 Explore DR — Tourist data collected manually and from OpenStreetMap";
+// Abrir ruta en Google Maps
+function abrirRuta(lat,lon){
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const url=`https://www.google.com/maps/dir/${pos.coords.latitude},${pos.coords.longitude}/${lat},${lon}`;
+      window.open(url,"_blank");
+    },()=>window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank"));
+  }else{
+    window.open(`https://www.google.com/maps?q=${lat},${lon}`,"_blank");
+  }
+}
+
+document.getElementById("langBtn").onclick=()=>{
+  lang=lang==="es"?"en":"es";
+  document.getElementById("langBtn").innerText=lang==="es"?"English":"Español";
+  mostrarLugares();
 };
 
-// Selector de ciudad
-document.getElementById("city").onchange=(e)=>{
-  showPlaces(e.target.value);
-};
-
-// Mostrar Puerto Plata por defecto
-showPlaces("puertoplata");
+mostrarLugares();
 </script>
-
 </body>
 </html>
