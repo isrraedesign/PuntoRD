@@ -1,272 +1,200 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PuntoRD - Todos los puntos por provincia (en tiempo real)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PuntoRD - Guía Turística Profesional</title>
 
-  <!-- Leaflet core -->
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Leaflet.markercluster CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-
+  
+  <!-- Estilo personalizado -->
   <style>
-    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f5f7f9; }
-    header{ background:#00796b; color:white; padding:14px; text-align:center; font-size:18px; font-weight:700 }
-    #controls{ display:flex; gap:8px; align-items:center; padding:10px; justify-content:center; background:#fff; box-shadow:0 1px 4px rgba(0,0,0,0.08) }
-    select, button { padding:8px 10px; border-radius:6px; border:1px solid #cfd8dc; font-size:14px }
-    #map { height:78vh; width:100%; }
-    footer{ text-align:center; padding:10px; background:#00796b; color:#fff; font-size:13px }
-    .legend { position: absolute; left:10px; bottom:70px; background:white; padding:8px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.12) }
-    .loading { position: absolute; right:10px; top:10px; background:rgba(255,255,255,0.9); padding:6px 10px; border-radius:6px; box-shadow:0 1px 4px rgba(0,0,0,0.12) }
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #f4f9f9;
+    }
+
+    header {
+      background: linear-gradient(90deg, #00796b, #009688);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.5rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    #container {
+      display: flex;
+      flex: 1;
+    }
+
+    #sidebar {
+      width: 300px;
+      background: white;
+      overflow-y: auto;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.1);
+      padding: 1rem;
+    }
+
+    #map {
+      flex: 1;
+      height: 100%;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.6rem;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    .lugar {
+      border-bottom: 1px solid #eee;
+      padding: 0.5rem 0;
+      cursor: pointer;
+    }
+
+    .lugar:hover {
+      background: #e0f2f1;
+    }
+
+    .titulo {
+      font-weight: bold;
+      color: #00796b;
+    }
+
+    footer {
+      background: #004d40;
+      color: white;
+      text-align: center;
+      padding: 0.6rem;
+      font-size: 0.9rem;
+    }
+
+    .leaflet-popup-content {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
   </style>
 </head>
+
 <body>
-  <header>🌎 PuntoRD — Puntos (playas, ríos, restaurantes, hoteles, tiendas, atracciones) por provincia</header>
+  <header>🌴 PuntoRD - Guía Turística por Provincias</header>
 
-  <div id="controls">
-    <label>Provincia:
+  <div id="container">
+    <div id="sidebar">
       <select id="provincia">
-        <option value="todas">Todas</option>
-        <!-- Lista completa (31 provincias + Distrito Nacional) -->
-        <option>Azua</option><option>Baoruco</option><option>Barahona</option><option>Dajabón</option>
-        <option>Distrito Nacional</option><option>Duarte</option><option>Elías Piña</option><option>El Seibo</option>
-        <option>Espaillat</option><option>Hato Mayor</option><option>Hermanas Mirabal</option><option>Independencia</option>
-        <option>La Altagracia</option><option>La Romana</option><option>La Vega</option><option>María Trinidad Sánchez</option>
-        <option>Monseñor Nouel</option><option>Monte Cristi</option><option>Monte Plata</option><option>Pedernales</option>
-        <option>Peravia</option><option>Puerto Plata</option><option>Hermanas Mirabal</option><option>Samaná</option>
-        <option>Sánchez Ramírez</option><option>San Cristóbal</option><option>San José de Ocoa</option><option>San Juan</option>
-        <option>San Pedro de Macorís</option><option>Santo Domingo</option><option>Santiago</option><option>Santiago Rodríguez</option>
-        <option>Valverde</option>
+        <option value="todas">Selecciona una provincia</option>
+        <option value="Santo Domingo">Santo Domingo</option>
+        <option value="La Romana">La Romana</option>
+        <option value="Puerto Plata">Puerto Plata</option>
+        <option value="Samaná">Samaná</option>
+        <option value="Barahona">Barahona</option>
+        <option value="La Vega">La Vega</option>
+        <option value="Santiago">Santiago</option>
+        <option value="La Altagracia">La Altagracia</option>
       </select>
-    </label>
 
-    <button id="cargar">Cargar puntos (Overpass)</button>
-    <label><input id="soloDest" type="checkbox"> Solo destacados</label>
-    <button id="reset">Limpiar</button>
+      <div id="lista-lugares"></div>
+    </div>
+
+    <div id="map"></div>
   </div>
 
-  <div id="map"></div>
-
-  <div class="legend" id="legend">
-    <div>🔵 Playa / 🏞 Río / 🍽 Restaurante / 🏨 Hotel / 🛍 Tienda / 📍 Atracción / ⚠️ Restricción</div>
-  </div>
-
-  <div class="loading" id="loading" style="display:none">Cargando datos…</div>
-
-  <footer>© 2025 PuntoRD — Datos: OpenStreetMap / Overpass API</footer>
+  <footer>© 2025 PuntoRD | Inspirado en los paisajes de República Dominicana 🇩🇴</footer>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
   <script>
-  // --- Inicialización básica ---
-  const map = L.map('map').setView([18.7357, -70.1627], 8);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
-  }).addTo(map);
+    const map = L.map("map").setView([18.7357, -70.1627], 8);
 
-  // Cluster layer para muchos marcadores
-  const markersCluster = L.markerClusterGroup();
-  map.addLayer(markersCluster);
+    // Estilo de mapa diferente (no Google-like)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: "© OpenStreetMap & CARTO",
+    }).addTo(map);
 
-  const loadingEl = document.getElementById('loading');
-  function setLoading(on){ loadingEl.style.display = on ? 'block' : 'none'; }
+    const lugares = {
+      "Santo Domingo": [
+        { nombre: "Zona Colonial", tipo: "Cultural", coords: [18.47, -69.89], descripcion: "Patrimonio histórico con restaurantes, museos y vida nocturna." },
+        { nombre: "Malecón", tipo: "Recreativo", coords: [18.46, -69.90], descripcion: "Zona costera ideal para caminar, comer o ver el atardecer." },
+        { nombre: "Acuario Nacional", tipo: "Familiar", coords: [18.47, -69.85], descripcion: "Espacio marino con especies tropicales y vistas al mar Caribe." }
+      ],
+      "La Romana": [
+        { nombre: "Altos de Chavón", tipo: "Cultural", coords: [18.42, -68.90], descripcion: "Villa artística con vistas al río Chavón y tiendas artesanales." },
+        { nombre: "Playa Bayahibe", tipo: "Playa", coords: [18.36, -68.83], descripcion: "Arena blanca y agua turquesa, punto de salida a Isla Saona." }
+      ],
+      "Puerto Plata": [
+        { nombre: "Teleférico", tipo: "Aventura", coords: [19.77, -70.68], descripcion: "Sube al Pico Isabel de Torres con increíbles vistas de la ciudad." },
+        { nombre: "Playa Sosúa", tipo: "Playa", coords: [19.76, -70.52], descripcion: "Famosa por su vida nocturna y buceo colorido." }
+      ],
+      "Samaná": [
+        { nombre: "Cascada El Limón", tipo: "Naturaleza", coords: [19.29, -69.40], descripcion: "Una caída de agua rodeada de selva tropical." },
+        { nombre: "Playa Rincón", tipo: "Playa", coords: [19.25, -69.32], descripcion: "Una de las playas más bellas del Caribe." }
+      ],
+      "Barahona": [
+        { nombre: "Bahía de las Águilas", tipo: "Playa", coords: [17.82, -71.55], descripcion: "Área protegida de belleza natural única." },
+        { nombre: "Río San Rafael", tipo: "Río", coords: [18.02, -71.12], descripcion: "Agua dulce cristalina entre montañas." }
+      ],
+      "La Vega": [
+        { nombre: "Salto de Jimenoa", tipo: "Río", coords: [19.12, -70.55], descripcion: "Cascada natural en Jarabacoa, ideal para excursionistas." },
+        { nombre: "Constanza", tipo: "Montaña", coords: [18.91, -70.75], descripcion: "Clima frío, flores y agricultura ecológica." }
+      ],
+      "Santiago": [
+        { nombre: "Monumento a los Héroes", tipo: "Histórico", coords: [19.45, -70.69], descripcion: "Símbolo de la ciudad con vista panorámica." },
+        { nombre: "Centro León", tipo: "Cultural", coords: [19.47, -70.68], descripcion: "Museo y galería que promueven el arte dominicano." }
+      ],
+      "La Altagracia": [
+        { nombre: "Basílica de Higüey", tipo: "Religioso", coords: [18.61, -68.71], descripcion: "Centro espiritual más importante del país." },
+        { nombre: "Playa Bávaro", tipo: "Playa", coords: [18.71, -68.44], descripcion: "Famoso destino turístico con resorts y arena blanca." }
+      ]
+    };
 
-  // Iconos simples por tipo (usamos emoji en popup y color del circleMarker)
-  const tipoColor = { 'beach':'#1976d2', 'river':'#00695c', 'restaurant':'#ef6c00', 'hotel':'#6a1b9a', 'shop':'#2e7d32', 'attraction':'#0288d1', 'restriction':'#d32f2f', 'other':'#546e7a' };
+    const markers = [];
 
-  // Lista manual de puntos destacados (los más visitados) por provincia — ejemplos que puedes ampliar
-  // He incluido los principales por provincia (no es exhaustivo de comercios; Overpass trae TODO)
-  const destacados = {
-    "Santo Domingo": [
-      {nombre:"Zona Colonial", tipo:"attraction", coords:[18.47,-69.89]},
-      {nombre:"Malecón", tipo:"attraction", coords:[18.46,-69.90]}
-    ],
-    "La Romana":[
-      {nombre:"Altos de Chavón", tipo:"attraction", coords:[18.42,-68.90]},
-      {nombre:"Playa Bayahibe", tipo:"beach", coords:[18.36,-68.83]}
-    ],
-    "Puerto Plata":[
-      {nombre:"Teleférico", tipo:"attraction", coords:[19.77,-70.68]},
-      {nombre:"Playa Dorada", tipo:"beach", coords:[19.76,-70.65]}
-    ],
-    "Samaná":[
-      {nombre:"Cascada El Limón", tipo:"river", coords:[19.29,-69.40]},
-      {nombre:"Playa Rincón", tipo:"beach", coords:[19.25,-69.32]}
-    ],
-    "Barahona":[
-      {nombre:"Bahía de las Águilas", tipo:"beach", coords:[17.82,-71.55]}
-    ],
-    "La Vega":[
-      {nombre:"Salto de Jimenoa", tipo:"river", coords:[19.12,-70.55]}
-    ],
-    "Santiago":[
-      {nombre:"Monumento a los Héroes", tipo:"attraction", coords:[19.45,-70.69]}
-    ],
-    "Pedernales":[
-      {nombre:"Parque Nacional Jaragua", tipo:"attraction", coords:[17.84,-71.48]}
-    ]
-    // Puedes añadir manualmente más destacados por provincia aquí
-  };
+    function cargarProvincia(nombreProvincia) {
+      document.getElementById("lista-lugares").innerHTML = "";
+      markers.forEach(m => map.removeLayer(m));
+      markers.length = 0;
 
-  // Función que construye la consulta Overpass para una provincia y categoría amplia
-  function buildOverpassQuery(areaName) {
-    // buscamos en area por nombre (puede devolver más de un match; Overpass resolverá)
-    // traemos nodos/ways/relations con tags útiles: amenity, tourism, shop, leisure, natural=water, waterway=river, beach
-    const categories = [
-      'amenity~"restaurant|cafe|bar|fast_food|pub|market|hospital|clinic|pharmacy"',
-      'tourism~"hotel|hostel|museum|attraction|viewpoint|zoo|theme_park"',
-      'shop',
-      'leisure~"park|stadium|garden|swimming_pool"',
-      'natural~"water|beach"',
-      'waterway~"river|stream"'
-    ];
-    const union = categories.map(c => `node[${c}](area.searchArea);way[${c}](area.searchArea);relation[${c}](area.searchArea);`).join('\n');
-    const q = `[out:json][timeout:90];
-      area["name"="${areaName}"]->.searchArea;
-      (
-        ${union}
-      );
-      out center tags;`;
-    return q;
-  }
+      if (nombreProvincia === "todas") {
+        map.setView([18.7357, -70.1627], 8);
+        return;
+      }
 
-  // Llama Overpass y devuelve array de puntos normalizados
-  async function fetchOverpass(areaName){
-    setLoading(true);
-    try{
-      const query = buildOverpassQuery(areaName);
-      const resp = await fetch('https://overpass-api.de/api/interpreter', { method:'POST', body: query });
-      if(!resp.ok) throw new Error('Error Overpass: ' + resp.status);
-      const data = await resp.json();
-      // Normalizar elementos
-      const items = (data.elements||[]).map(e => {
-        const lat = e.lat || (e.center && e.center.lat);
-        const lon = e.lon || (e.center && e.center.lon);
-        const tags = e.tags || {};
-        const name = tags.name || tags['alt_name'] || null;
-        // determinar tipo aproximado
-        let tipo = 'other';
-        if(tags.tourism) tipo = tags.tourism;
-        else if(tags.amenity) tipo = tags.amenity;
-        else if(tags.shop) tipo = 'shop';
-        else if(tags.natural === 'water') tipo = 'river';
-        else if(tags.natural === 'beach') tipo = 'beach';
-        else if(tags.waterway) tipo = 'river';
-        return { id: e.id, lat, lon, name, tags, tipo };
-      }).filter(i => i.lat && i.lon);
-      return items;
-    } finally { setLoading(false); }
-  }
+      const lugaresProvincia = lugares[nombreProvincia] || [];
 
-  // Mostrar marcadores (acepta array de items Overpass + destacados manuales)
-  function renderItems(items, provincia, soloDest){
-    markersCluster.clearLayers();
-    // primero mostrar destacados manuales
-    const manual = destacados[provincia] || [];
-    if(!soloDest){
-      manual.forEach(d => {
-        const m = L.circleMarker(d.coords, { radius:12, color:'gold', fillColor:'gold', fillOpacity:0.95 }).bindPopup(`<b>⭐ ${d.nombre}</b><br>${d.tipo}`);
-        markersCluster.addLayer(m);
-      });
-    } else {
-      // si soloDest verdadero, mostramos solo manuales (si existen)
-      manual.forEach(d => {
-        const m = L.circleMarker(d.coords, { radius:12, color:'gold', fillColor:'gold', fillOpacity:0.95 }).bindPopup(`<b>⭐ ${d.nombre}</b><br>${d.tipo}`);
-        markersCluster.addLayer(m);
+      // Zoom centrado
+      if (lugaresProvincia.length > 0) {
+        map.setView(lugaresProvincia[0].coords, 11);
+      }
+
+      lugaresProvincia.forEach(lugar => {
+        const marker = L.marker(lugar.coords).addTo(map)
+          .bindPopup(`<b>${lugar.nombre}</b><br>${lugar.tipo}<br>${lugar.descripcion}`);
+        markers.push(marker);
+
+        // Añadir a la lista lateral
+        const item = document.createElement("div");
+        item.className = "lugar";
+        item.innerHTML = `<div class="titulo">${lugar.nombre}</div><div>${lugar.tipo}</div>`;
+        item.onclick = () => {
+          map.setView(lugar.coords, 14);
+          marker.openPopup();
+        };
+        document.getElementById("lista-lugares").appendChild(item);
       });
     }
 
-    if(!soloDest){
-      // mapear items a estilo y añadir
-      items.forEach(it => {
-        const kind = determineKind(it);
-        const color = tipoColor[kind] || tipoColor.other;
-        const mk = L.circleMarker([it.lat,it.lon], { radius:5, color, fillColor: color, fillOpacity:0.9 })
-          .bindPopup(`<b>${escapeHtml(it.name || '(sin nombre)')}</b><br>${kind}<br><small>${escapeHtml(firstTagSummary(it.tags))}</small>`);
-        markersCluster.addLayer(mk);
-      });
-    }
-
-    map.fitBounds(markersCluster.getBounds() || [[18.7357,-70.1627]]);
-  }
-
-  function determineKind(item){
-    const t = (item.tipo || '').toLowerCase();
-    if(t.includes('beach') || item.tags.natural === 'beach') return 'beach';
-    if(t.includes('river') || item.tags.waterway) return 'river';
-    if(t.includes('restaurant') || t.includes('cafe') || t.includes('bar') || t.includes('fast_food')) return 'restaurant';
-    if(t.includes('hotel') || t.includes('hostel') || t.includes('motel')) return 'hotel';
-    if(t.includes('shop')) return 'shop';
-    if(t.includes('tourism') || t.includes('attraction') || t.includes('museum') || t.includes('viewpoint')) return 'attraction';
-    return 'other';
-  }
-
-  function firstTagSummary(tags){
-    // devuelve string compacto con tags importantes
-    const keys = ['amenity','tourism','shop','leisure','natural','waterway'];
-    return keys.map(k => tags[k] ? `${k}: ${tags[k]}` : null).filter(Boolean).slice(0,3).join(' | ');
-  }
-
-  function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-  // Acción principal: cargar por provincia
-  document.getElementById('cargar').addEventListener('click', async () => {
-    const prov = document.getElementById('provincia').value;
-    if(!prov || prov === 'todas'){
-      alert('Selecciona una provincia específica para cargar todos los POI (evita consultas muy grandes).');
-      return;
-    }
-    const soloDest = document.getElementById('soloDest').checked;
-    try{
-      setLoading(true);
-      // fetch Overpass para la provincia
-      const items = await fetchOverpass(prov);
-      // mostramos items + destacados manuales
-      renderItems(items, prov, soloDest);
-    } catch(err){
-      alert('Error cargando datos: ' + err.message);
-    } finally{
-      setLoading(false);
-    }
-  });
-
-  // Reset limpia marcadores
-  document.getElementById('reset').addEventListener('click', () => {
-    markersCluster.clearLayers();
-    map.setView([18.7357, -70.1627], 8);
-  });
-
-  // Al seleccionar provincia, si hay destacados mostramos automáticamente
-  document.getElementById('provincia').addEventListener('change', (e) => {
-    const prov = e.target.value;
-    markersCluster.clearLayers();
-    const manual = destacados[prov] || [];
-    manual.forEach(d => {
-      const m = L.circleMarker(d.coords, { radius:12, color:'gold', fillColor:'gold', fillOpacity:0.95 }).bindPopup(`<b>⭐ ${d.nombre}</b><br>${d.tipo}`);
-      markersCluster.addLayer(m);
+    document.getElementById("provincia").addEventListener("change", e => {
+      cargarProvincia(e.target.value);
     });
-    if(manual.length) map.fitBounds(markersCluster.getBounds());
-  });
-
-  // Inicial: mostrar algunos destacados de SRD
-  (function init(){
-    const initialProv = 'Santo Domingo';
-    const manual = destacados[initialProv] || [];
-    manual.forEach(d => {
-      const m = L.circleMarker(d.coords, { radius:12, color:'gold', fillColor:'gold', fillOpacity:0.95 }).bindPopup(`<b>⭐ ${d.nombre}</b><br>${d.tipo}`);
-      markersCluster.addLayer(m);
-    });
-    if(manual.length) map.fitBounds(markersCluster.getBounds());
-  })();
-
-  // Advertencias y recomendaciones:
-  // - Overpass devuelve lo que hay en OpenStreetMap: cantidad y calidad dependen de contribuciones.
-  // - Evita pulsar "Cargar puntos" repetidamente sobre la misma provincia en segundos (rate limits).
-  // - Para producción: cachear resultados por provincia en servidor y usar tiles/servicio con SLA.
-  // Fuentes: Overpass API docs / Overpass QL. :contentReference[oaicite:6]{index=6}
   </script>
 </body>
 </html>
