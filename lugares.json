@@ -1,56 +1,472 @@
 [
   {
-    "provincia": "puertoplata",
-    "nombre": "Teleférico de Puerto Plata / Cable Car",
-    "descripcion": "Un paseo único hasta la cima de la montaña Isabel de Torres con vistas panorámicas.",
-    "tipo": "Atracción",
-    "lat": 19.754,
-    "lon": -70.707,
-    "ruta": "https://goo.gl/maps/kwhd1E8AC1q"
+    "provincia": "puerto_plata",
+    "tipo": "Atracción / Mirador",
+    "lat": 19.7730,
+    "lon": -70.6980,
+    "nombre": "Teleférico de Puerto Plata",
+    "descripcion": "Subida en teleférico al monte Isabel de Torres con vistas panorámicas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7730,-70.6980",
+    "translations": { "en": { "name": "Puerto Plata Cable Car", "desc": "Cable car up Isabel de Torres mountain with panoramic views." } }
   },
   {
-    "provincia": "puertoplata",
-    "nombre": "Playa Dorada / Golden Beach",
-    "descripcion": "Famosa playa de arena dorada con resorts, deportes acuáticos y restaurantes frente al mar.",
+    "provincia": "puerto_plata",
     "tipo": "Playa",
-    "lat": 19.771,
-    "lon": -70.640,
-    "ruta": "https://goo.gl/maps/zULb1U8m6UZ2"
+    "lat": 19.7710,
+    "lon": -70.6400,
+    "nombre": "Playa Dorada",
+    "descripcion": "Zona de resorts, arena dorada y actividades acuáticas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7710,-70.6400",
+    "translations": { "en": { "name": "Playa Dorada", "desc": "Resort area with golden sand and water sports." } }
   },
   {
-    "provincia": "puertoplata",
-    "nombre": "Fuerte San Felipe / San Felipe Fortress",
-    "descripcion": "Histórico fuerte colonial con museo sobre la historia de Puerto Plata.",
-    "tipo": "Lugar histórico",
-    "lat": 19.796,
-    "lon": -70.700,
-    "ruta": "https://goo.gl/maps/EcD7ujDqUhP2"
+    "provincia": "puerto_plata",
+    "tipo": "Lugar histórico / Fuerte",
+    "lat": 19.7960,
+    "lon": -70.7000,
+    "nombre": "Fuerte San Felipe",
+    "descripcion": "Fuerte colonial del siglo XVI con museo y vistas al mar.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7960,-70.7000",
+    "translations": { "en": { "name": "Fort San Felipe", "desc": "16th-century colonial fort with museum and ocean views." } }
   },
   {
-    "provincia": "puntacana",
-    "nombre": "Playa Bávaro / Bávaro Beach",
-    "descripcion": "Una de las playas más famosas del Caribe con arenas blancas y aguas turquesa.",
+    "provincia": "puerto_plata",
+    "tipo": "Paseo / Malecón",
+    "lat": 19.8000,
+    "lon": -70.6950,
+    "nombre": "Malecón de Puerto Plata",
+    "descripcion": "Paseo costero con bares, restaurantes y actividades al atardecer.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8000,-70.6950",
+    "translations": { "en": { "name": "Puerto Plata Boardwalk", "desc": "Seaside boardwalk with bars, restaurants and sunset views." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Museo",
+    "lat": 19.7920,
+    "lon": -70.6940,
+    "nombre": "Museo del Ámbar",
+    "descripcion": "Colección de ámbar, fósiles y piezas históricas de la región.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7920,-70.6940",
+    "translations": { "en": { "name": "Amber Museum", "desc": "Collection of amber, fossils and historical pieces from the region." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Puerto turístico",
+    "lat": 19.8410,
+    "lon": -70.7670,
+    "nombre": "Amber Cove (Puerto de cruceros)",
+    "descripcion": "Terminal moderna de cruceros con tiendas y excursiones.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8410,-70.7670",
+    "translations": { "en": { "name": "Amber Cove (Cruise Port)", "desc": "Modern cruise terminal with shops and excursions." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Aventura / Cascadas",
+    "lat": 19.7560,
+    "lon": -70.8420,
+    "nombre": "27 Charcos de Damajagua",
+    "descripcion": "Recorrido de cascadas y pozas para saltos y nado (tour guiado recomendado).",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7560,-70.8420",
+    "translations": { "en": { "name": "27 Waterfalls (Damajagua)", "desc": "Waterfall trail with natural pools for jumping and swimming (guided tours recommended)." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Parque acuático / Atracción",
+    "lat": 19.8190,
+    "lon": -70.7280,
+    "nombre": "Ocean World Adventure Park",
+    "descripcion": "Parque marino con espectáculos, encuentros con delfines y actividades familiares.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8190,-70.7280",
+    "translations": { "en": { "name": "Ocean World Adventure Park", "desc": "Marine park with shows, dolphin encounters and family activities." } }
+  },
+  {
+    "provincia": "puerto_plata",
     "tipo": "Playa",
-    "lat": 18.68,
-    "lon": -68.41,
-    "ruta": "https://goo.gl/maps/q1x5Gv7VqYx"
+    "lat": 19.7550,
+    "lon": -70.5190,
+    "nombre": "Playa Sosúa",
+    "descripcion": "Playa con aguas claras, buena para snorkel y vida nocturna cercana.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7550,-70.5190",
+    "translations": { "en": { "name": "Sosúa Beach", "desc": "Clear-water beach good for snorkeling and nearby nightlife." } }
   },
   {
-    "provincia": "puntacana",
-    "nombre": "Coco Bongo Punta Cana",
-    "descripcion": "Discoteca y espectáculo increíble, con música, luces y acrobacias.",
-    "tipo": "Entretenimiento",
-    "lat": 18.68,
-    "lon": -68.42,
-    "ruta": "https://goo.gl/maps/Mq2Rx5e78"
+    "provincia": "puerto_plata",
+    "tipo": "Playa / Surf",
+    "lat": 19.6620,
+    "lon": -70.4870,
+    "nombre": "Playa Cabarete",
+    "descripcion": "Famosa por kitesurf y surf; ambiente juvenil y restaurantes.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.6620,-70.4870",
+    "translations": { "en": { "name": "Cabarete Beach", "desc": "Famous for kitesurfing and surfing; lively atmosphere and restaurants." } }
   },
   {
-    "provincia": "puntacana",
-    "nombre": "Indigenous Eyes Ecological Park",
-    "descripcion": "Reserva natural con lagunas cristalinas y senderos entre la selva.",
-    "tipo": "Parque ecológico",
-    "lat": 18.52,
-    "lon": -68.37,
-    "ruta": "https://goo.gl/maps/BHZxZsmKQjG2"
+    "provincia": "puerto_plata",
+    "tipo": "Playa / Surf",
+    "lat": 19.6625,
+    "lon": -70.5000,
+    "nombre": "Playa Encuentro (Cabarete)",
+    "descripcion": "Conocida por sus olas para surfistas; muchos instructores y escuelas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.6625,-70.5000",
+    "translations": { "en": { "name": "Encuentro Beach", "desc": "Known for surfing waves; many instructors and surf schools." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Playa / Resort",
+    "lat": 19.8180,
+    "lon": -70.7290,
+    "nombre": "Cofresí Beach",
+    "descripcion": "Playa ubicada en zona de resorts, aguas calmadas y servicios turísticos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8180,-70.7290",
+    "translations": { "en": { "name": "Cofresí Beach", "desc": "Beach in a resort area with calm waters and tourist services." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Museo / Historia",
+    "lat": 19.7720,
+    "lon": -70.7050,
+    "nombre": "Casa Museo Gregorio Luperón",
+    "descripcion": "Museo sobre la vida de Gregorio Luperón y la historia local.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7720,-70.7050",
+    "translations": { "en": { "name": "Gregorio Luperón House Museum", "desc": "Museum about Gregorio Luperón's life and local history." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Ruta / Mirador",
+    "lat": 19.7750,
+    "lon": -70.6980,
+    "nombre": "Parque Nacional Isabel de Torres",
+    "descripcion": "Parque en la montaña con jardines, senderos y el monumento al Cristo.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7750,-70.6980",
+    "translations": { "en": { "name": "Isabel de Torres National Park", "desc": "Mountain park with gardens, trails and the Christ monument." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Restaurante",
+    "lat": 19.7890,
+    "lon": -70.7300,
+    "nombre": "Le Papillon (Cofresí)",
+    "descripcion": "Restaurante de alta cocina con ambiente elegante en la zona de Cofresí.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7890,-70.7300",
+    "translations": { "en": { "name": "Le Papillon (Cofresí)", "desc": "Fine dining restaurant with an elegant atmosphere in Cofresí area." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Fábrica / Tour",
+    "lat": 19.7850,
+    "lon": -70.6760,
+    "nombre": "Brugal Rum Factory",
+    "descripcion": "Visitas a la destilería y degustaciones del ron local.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7850,-70.6760",
+    "translations": { "en": { "name": "Brugal Rum Factory", "desc": "Distillery tours and rum tastings." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Plaza / Centro",
+    "lat": 19.7820,
+    "lon": -70.6930,
+    "nombre": "Parque Central / Plaza",
+    "descripcion": "Plaza principal con actividad cultural y cercanía a comercios históricos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7820,-70.6930",
+    "translations": { "en": { "name": "Central Park / Plaza", "desc": "Main square with cultural activity and historic shops nearby." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Hotel / Resort",
+    "lat": 19.7880,
+    "lon": -70.6450,
+    "nombre": "Hotel Casa Colonial Beach & Spa",
+    "descripcion": "Hotel de categoría con servicios de spa y cercanía a la playa.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7880,-70.6450",
+    "translations": { "en": { "name": "Casa Colonial Hotel & Spa", "desc": "Upscale hotel with spa services and close to the beach." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Vida nocturna",
+    "lat": 19.7830,
+    "lon": -70.6770,
+    "nombre": "Kviar Show Disco & Casino",
+    "descripcion": "Entretenimiento nocturno con shows y casino.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7830,-70.6770",
+    "translations": { "en": { "name": "Kviar Show Disco & Casino", "desc": "Night entertainment with shows and casino." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Aventura / Parque",
+    "lat": 19.7250,
+    "lon": -70.5100,
+    "nombre": "Monkey Jungle Adventure Park",
+    "descripcion": "Parque de aventura con tirolesas y actividades al aire libre.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7250,-70.5100",
+    "translations": { "en": { "name": "Monkey Jungle Adventure Park", "desc": "Adventure park with ziplines and outdoor activities." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Playa urbana",
+    "lat": 19.7770,
+    "lon": -70.6080,
+    "nombre": "El Bergantín Beach",
+    "descripcion": "Playa urbana con acceso fácil y servicios cercanos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7770,-70.6080",
+    "translations": { "en": { "name": "El Bergantín Beach", "desc": "Urban beach with easy access and nearby services." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Playa / Resort",
+    "lat": 19.8320,
+    "lon": -70.7570,
+    "nombre": "Playa Cofresí (zona hotelera)",
+    "descripcion": "Zona de resorts y alojamiento turístico con playas privadas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8320,-70.7570",
+    "translations": { "en": { "name": "Cofresí Beach (resort area)", "desc": "Resort and hotel area with private beaches." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Playa",
+    "lat": 18.6930,
+    "lon": -68.4290,
+    "nombre": "Playa Bávaro",
+    "descripcion": "Extensa playa de arena blanca y principales resorts de Punta Cana.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.6930,-68.4290",
+    "translations": { "en": { "name": "Bávaro Beach", "desc": "Long white-sand beach and main Punta Cana resorts." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Isla / Excursión",
+    "lat": 18.1530,
+    "lon": -68.7240,
+    "nombre": "Isla Saona",
+    "descripcion": "Excursión de playa y snorkel, parte del Parque Nacional del Este.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.1530,-68.7240",
+    "translations": { "en": { "name": "Saona Island", "desc": "Beach and snorkel excursion, part of the East National Park." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Parque / Cenote",
+    "lat": 18.5220,
+    "lon": -68.3630,
+    "nombre": "Hoyo Azul (Scape Park)",
+    "descripcion": "Piscina natural de color azul intenso en Scape Park (excursión popular).",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5220,-68.3630",
+    "translations": { "en": { "name": "Hoyo Azul (Scape Park)", "desc": "Deep blue natural pool inside Scape Park (popular excursion)." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Reserva ecológica",
+    "lat": 18.5040,
+    "lon": -68.3720,
+    "nombre": "Parque Ecológico Ojos Indígenas",
+    "descripcion": "Red de lagunas y senderos protegidos, ideal para naturaleza y baño en laguna.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5040,-68.3720",
+    "translations": { "en": { "name": "Ojos Indígenas Ecological Park", "desc": "Network of lagoons and trails, ideal for nature walks and lagoon swims." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Atracción / Parque",
+    "lat": 18.5220,
+    "lon": -68.3620,
+    "nombre": "Scape Park",
+    "descripcion": "Parque de aventuras con cuevas, tirolinas y cenotes.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5220,-68.3620",
+    "translations": { "en": { "name": "Scape Park", "desc": "Adventure park with caves, ziplines and cenotes." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Playa / Surf",
+    "lat": 18.7640,
+    "lon": -68.5100,
+    "nombre": "Playa Macao",
+    "descripcion": "Playa extensa y famosa por el surf; ambiente local y excursiones 4x4.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.7640,-68.5100",
+    "translations": { "en": { "name": "Macao Beach", "desc": "Long beach known for surfing; local vibe and 4x4 excursions." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Playa / Resort",
+    "lat": 18.4910,
+    "lon": -68.3980,
+    "nombre": "Juanillo Beach (Cap Cana)",
+    "descripcion": "Playa exclusiva en Cap Cana, aguas turquesa y arenas claras.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.4910,-68.3980",
+    "translations": { "en": { "name": "Juanillo Beach (Cap Cana)", "desc": "Exclusive beach in Cap Cana with turquoise waters and white sands." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Marina / Yates",
+    "lat": 18.4930,
+    "lon": -68.3910,
+    "nombre": "Marina Cap Cana",
+    "descripcion": "Marina con restaurantes, tiendas y embarcaciones de lujo.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.4930,-68.3910",
+    "translations": { "en": { "name": "Cap Cana Marina", "desc": "Marina with restaurants, shops and luxury yachts." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Centro comercial",
+    "lat": 18.5240,
+    "lon": -68.3730,
+    "nombre": "BlueMall Punta Cana",
+    "descripcion": "Centro comercial con tiendas de marcas, restaurantes y cines.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5240,-68.3730",
+    "translations": { "en": { "name": "BlueMall Punta Cana", "desc": "Shopping mall with brand stores, restaurants and cinemas." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Parque acuático / Temático",
+    "lat": 18.7070,
+    "lon": -68.4220,
+    "nombre": "Manatí Park",
+    "descripcion": "Parque temático con shows, animales marinos y actividades familiares.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.7070,-68.4220",
+    "translations": { "en": { "name": "Manatí Park", "desc": "Theme park with shows, marine animals and family activities." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Entretenimiento / Discoteca",
+    "lat": 18.6990,
+    "lon": -68.4410,
+    "nombre": "Imagine (discoteca en cueva)",
+    "descripcion": "Famosa discoteca ubicada dentro de una cueva, shows nocturnos únicos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.6990,-68.4410",
+    "translations": { "en": { "name": "Imagine (cave nightclub)", "desc": "Famous nightclub inside a cave with unique nightly shows." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Hotel / Casino",
+    "lat": 18.7330,
+    "lon": -68.4680,
+    "nombre": "Hard Rock Hotel & Casino Punta Cana",
+    "descripcion": "Gran resort con entretenimiento, restaurantes y casino.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.7330,-68.4680",
+    "translations": { "en": { "name": "Hard Rock Hotel & Casino Punta Cana", "desc": "Large resort with entertainment, restaurants and casino." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Aventura",
+    "lat": 18.6850,
+    "lon": -68.4360,
+    "nombre": "Bávaro Adventure Park",
+    "descripcion": "Parque con tirolinas, buggies y actividades extremas para turistas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.6850,-68.4360",
+    "translations": { "en": { "name": "Bávaro Adventure Park", "desc": "Park with ziplines, buggies and extreme activities for tourists." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Restaurante",
+    "lat": 18.5050,
+    "lon": -68.3770,
+    "nombre": "La Yola (Restaurante, Punta Cana Marina)",
+    "descripcion": "Restaurante frente al mar con pescados y platos caribeños.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5050,-68.3770",
+    "translations": { "en": { "name": "La Yola Restaurant (Punta Cana Marina)", "desc": "Seafront restaurant featuring seafood and Caribbean dishes." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Resort / Hotel",
+    "lat": 18.7300,
+    "lon": -68.4650,
+    "nombre": "Iberostar Grand Bávaro",
+    "descripcion": "Resort de lujo con todo incluido y acceso directo a la playa.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.7300,-68.4650",
+    "translations": { "en": { "name": "Iberostar Grand Bávaro", "desc": "Luxury all-inclusive resort with direct beach access." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Playa / Local",
+    "lat": 19.6680,
+    "lon": -70.4875,
+    "nombre": "Playa Los Patos",
+    "descripcion": "Playa menos concurrida, con ambiente local y naturaleza.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.6680,-70.4875",
+    "translations": { "en": { "name": "Los Patos Beach", "desc": "Less crowded beach with local vibe and nature." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Mirador",
+    "lat": 19.6810,
+    "lon": -70.7000,
+    "nombre": "Mirador La Puntilla",
+    "descripcion": "Mirador con vistas al litoral y la ciudad; buen punto para fotos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.6810,-70.7000",
+    "translations": { "en": { "name": "La Puntilla Viewpoint", "desc": "Lookout with views of the coastline and city; great photo spot." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Playa",
+    "lat": 19.8000,
+    "lon": -70.6840,
+    "nombre": "Long Beach (Playa larga)",
+    "descripcion": "Amplia franja de arena cercana al centro urbano.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.8000,-70.6840",
+    "translations": { "en": { "name": "Long Beach", "desc": "Long stretch of sand near the city center." } }
+  },
+  {
+    "provincia": "puerto_plata",
+    "tipo": "Compras / Artesanía",
+    "lat": 19.7880,
+    "lon": -70.7040,
+    "nombre": "Feria de Artesanías",
+    "descripcion": "Lugar para comprar artesanías locales y recuerdos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=19.7880,-70.7040",
+    "translations": { "en": { "name": "Handicraft Fair", "desc": "Place to buy local crafts and souvenirs." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Parque natural / Senderismo",
+    "lat": 18.5200,
+    "lon": -68.3600,
+    "nombre": "Reserva Ecológica Punta Cana",
+    "descripcion": "Áreas protegidas y senderos para observar flora y fauna local.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5200,-68.3600",
+    "translations": { "en": { "name": "Punta Cana Ecological Reserve", "desc": "Protected areas and trails to observe local flora and fauna." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Playa / Arena Gorda",
+    "lat": 18.7320,
+    "lon": -68.4680,
+    "nombre": "Playa Arena Gorda",
+    "descripcion": "Amplia playa con resorts y servicios turísticos.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.7320,-68.4680",
+    "translations": { "en": { "name": "Arena Gorda Beach", "desc": "Large beach with resorts and tourist services." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Centro / Ocio",
+    "lat": 18.6880,
+    "lon": -68.4200,
+    "nombre": "Downtown Punta Cana",
+    "descripcion": "Área de ocio y restaurantes con vida nocturna.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.6880,-68.4200",
+    "translations": { "en": { "name": "Downtown Punta Cana", "desc": "Entertainment area with restaurants and nightlife." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Shopping",
+    "lat": 18.5205,
+    "lon": -68.3720,
+    "nombre": "BlueMall Punta Cana",
+    "descripcion": "Centro comercial moderno con tiendas y restaurantes.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5205,-68.3720",
+    "translations": { "en": { "name": "BlueMall Punta Cana", "desc": "Modern shopping mall with stores and restaurants." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Playa / Resort",
+    "lat": 18.6820,
+    "lon": -68.3860,
+    "nombre": "Catalonia Bavaro Beach",
+    "descripcion": "Resort frente a la playa con actividades familiares.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.6820,-68.3860",
+    "translations": { "en": { "name": "Catalonia Bavaro Beach", "desc": "Beachfront resort with family activities." } }
+  },
+  {
+    "provincia": "la_altagracia",
+    "tipo": "Puerto / Marina",
+    "lat": 18.5245,
+    "lon": -68.3735,
+    "nombre": "Marina & Cap Cana",
+    "descripcion": "Zona de marinas y yates con restaurantes y actividades náuticas.",
+    "ruta": "https://www.google.com/maps/search/?api=1&query=18.5245,-68.3735",
+    "translations": { "en": { "name": "Marina & Cap Cana", "desc": "Marina area with restaurants and nautical activities." } }
   }
 ]
