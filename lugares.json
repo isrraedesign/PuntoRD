@@ -1,12 +1,56 @@
-{
-  "puertoplata": [
-    {"coords":[19.773,-70.698],"es":{"nombre":"Teleférico de Puerto Plata","desc":"Vista panorámica desde el monte Isabel de Torres."},"en":{"nombre":"Puerto Plata Cable Car","desc":"Panoramic view from Isabel de Torres mountain."}},
-    {"coords":[19.755,-70.519],"es":{"nombre":"Playa Sosúa","desc":"Arena dorada y aguas claras."},"en":{"nombre":"Sosúa Beach","desc":"Golden sand and clear waters."}},
-    {"coords":[19.792,-70.694],"es":{"nombre":"Malecón de Puerto Plata","desc":"Zona costera con bares, música y restaurantes."},"en":{"nombre":"Puerto Plata Boardwalk","desc":"Coastal area with bars, music and restaurants."}}
-  ],
-  "puntacana": [
-    {"coords":[18.581,-68.404],"es":{"nombre":"Playa Bávaro","desc":"Una de las playas más hermosas del Caribe."},"en":{"nombre":"Bávaro Beach","desc":"One of the most beautiful beaches in the Caribbean."}},
-    {"coords":[18.562,-68.388],"es":{"nombre":"Coco Bongo Punta Cana","desc":"Famoso club con espectáculos en vivo."},"en":{"nombre":"Coco Bongo Punta Cana","desc":"Famous club with live shows."}},
-    {"coords":[18.520,-68.390],"es":{"nombre":"Downtown Mall","desc":"Centro comercial moderno con tiendas y restaurantes."},"en":{"nombre":"Downtown Mall","desc":"Modern shopping center with restaurants and stores."}}
-  ]
-}
+[
+  {
+    "provincia": "puertoplata",
+    "nombre": "Teleférico de Puerto Plata / Cable Car",
+    "descripcion": "Un paseo único hasta la cima de la montaña Isabel de Torres con vistas panorámicas.",
+    "tipo": "Atracción",
+    "lat": 19.754,
+    "lon": -70.707,
+    "ruta": "https://goo.gl/maps/kwhd1E8AC1q"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Playa Dorada / Golden Beach",
+    "descripcion": "Famosa playa de arena dorada con resorts, deportes acuáticos y restaurantes frente al mar.",
+    "tipo": "Playa",
+    "lat": 19.771,
+    "lon": -70.640,
+    "ruta": "https://goo.gl/maps/zULb1U8m6UZ2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Fuerte San Felipe / San Felipe Fortress",
+    "descripcion": "Histórico fuerte colonial con museo sobre la historia de Puerto Plata.",
+    "tipo": "Lugar histórico",
+    "lat": 19.796,
+    "lon": -70.700,
+    "ruta": "https://goo.gl/maps/EcD7ujDqUhP2"
+  },
+  {
+    "provincia": "puntacana",
+    "nombre": "Playa Bávaro / Bávaro Beach",
+    "descripcion": "Una de las playas más famosas del Caribe con arenas blancas y aguas turquesa.",
+    "tipo": "Playa",
+    "lat": 18.68,
+    "lon": -68.41,
+    "ruta": "https://goo.gl/maps/q1x5Gv7VqYx"
+  },
+  {
+    "provincia": "puntacana",
+    "nombre": "Coco Bongo Punta Cana",
+    "descripcion": "Discoteca y espectáculo increíble, con música, luces y acrobacias.",
+    "tipo": "Entretenimiento",
+    "lat": 18.68,
+    "lon": -68.42,
+    "ruta": "https://goo.gl/maps/Mq2Rx5e78"
+  },
+  {
+    "provincia": "puntacana",
+    "nombre": "Indigenous Eyes Ecological Park",
+    "descripcion": "Reserva natural con lagunas cristalinas y senderos entre la selva.",
+    "tipo": "Parque ecológico",
+    "lat": 18.52,
+    "lon": -68.37,
+    "ruta": "https://goo.gl/maps/BHZxZsmKQjG2"
+  }
+]
