@@ -1,335 +1,107 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Guía Puerto Plata & Punta Cana — ExploraRD</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PuntoRD — Guía Turística Puerto Plata & Punta Cana</title>
 
-<link rel="manifest" href="./manifest.json">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Librería Leaflet para el mapa -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<style>
-  :root{
-    --accent1:#FF7043; --accent2:#26A69A; --bg:#fffefc; --muted:#546e7a;
-  }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:#042b2b;display:flex;flex-direction:column;height:100vh}
-  header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:linear-gradient(90deg,var(--accent2),#009688);color:white}
-  header h1{font-size:1rem;margin:0}
-  #main{display:flex;flex:1;min-height:0}
-  #sidebar{width:360px;padding:12px;background:white;border-right:1px solid #e6f0ef;overflow:auto}
-  #map{flex:1;min-height:0}
-  select,input,button{width:100%;padding:10px;border-radius:8px;border:1px solid #d7e6e4;margin-top:8px;font-size:14px}
-  .row{display:flex;gap:8px}
-  .row > *{flex:1}
-  .controls{margin-top:8px}
-  .list{margin-top:12px}
-  .item{padding:10px;border-radius:8px;border:1px solid #eef7f6;margin-bottom:8px;background:#fff;cursor:pointer}
-  .title{font-weight:700;color:var(--accent2)}
-  .meta{font-size:13px;color:var(--muted);margin-top:6px}
-  footer{padding:8px;text-align:center;font-size:13px;color:var(--muted);background:#f1f9f8}
-  .lang-switch{display:flex;gap:6px;margin-top:8px}
-  .chip{padding:6px 8px;border-radius:999px;background:#f0f9f8;border:1px solid #d7e6e4;cursor:pointer}
-  .chip.active{background:var(--accent1);color:white;border:none}
-  .small{font-size:13px;color:#5b6b6a}
-  @media(max-width:900px){#sidebar{width:100%;height:280px;order:2}#map{order:1;height:calc(100vh - 360px)}}
-</style>
+  <!-- Estilos personalizados -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <header>
+    <h1>🌴 PuntoRD</h1>
+    <p>Tu guía interactiva de <b>Puerto Plata</b> y <b>Punta Cana</b></p>
 
-<header>
-  <h1>🌎 ExploraRD — Puerto Plata & Punta Cana</h1>
-  <div style="display:flex;gap:8px;align-items:center">
-    <div class="small" id="userPosStatus">Ubicación: no activada</div>
-    <button id="btnInstall" style="display:none;padding:8px;border-radius:8px;background:#004d40;color:white;border:none">Instalar</button>
-  </div>
-</header>
-
-<div id="main">
-  <aside id="sidebar">
-    <label for="province">Selecciona provincia / Select province</label>
-    <select id="province">
-      <option value="">-- Elige una provincia --</option>
-      <option value="puerto_plata">Puerto Plata</option>
-      <option value="la_altagracia">Punta Cana (La Altagracia)</option>
+    <!-- Selector de idioma -->
+    <select id="languageSelect">
+      <option value="es">Español 🇪🇸</option>
+      <option value="en">English 🇬🇧</option>
+      <option value="fr">Français 🇫🇷</option>
+      <option value="it">Italiano 🇮🇹</option>
+      <option value="zh">中文 🇨🇳</option>
     </select>
 
-    <div class="controls">
-      <div class="row">
-        <input id="search" placeholder="Buscar (nombre, tipo, calle) — Search" />
-        <button id="btnLoad" style="background:var(--accent1);color:white;border:none">Cargar</button>
-      </div>
-
-      <div class="lang-switch" title="Cambiar idioma / Change language">
-        <div class="chip active" data-lang="es">ES</div>
-        <div class="chip" data-lang="en">EN</div>
-        <div class="chip" data-lang="fr">FR</div>
-        <div class="chip" data-lang="it">IT</div>
-        <div class="chip" data-lang="zh">中文</div>
-      </div>
-
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button id="locateBtn" style="flex:1">Mi ubicación</button>
-        <button id="clearBtn" style="flex:1">Limpiar</button>
-      </div>
-
-      <div class="meta">Consejo: selecciona la provincia y pulsa "Cargar". Para rutas, permite la ubicación cuando el navegador lo solicite.</div>
-    </div>
-
-    <div class="list" id="placesList"></div>
-  </aside>
+    <!-- Selector de provincia -->
+    <select id="provinceSelect">
+      <option value="puertoplata">Puerto Plata</option>
+      <option value="puntacana">Punta Cana</option>
+    </select>
+  </header>
 
   <div id="map"></div>
-</div>
 
-<footer>© 2025 ExploraRD — Guía interactiva. Datos: compilación local + OpenStreetMap.</footer>
+  <footer>
+    <p>© 2025 PuntoRD — Guía Turística Interactiva de República Dominicana</p>
+  </footer>
 
-<!-- libs -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script>
+    // Configuración inicial del mapa
+    const map = L.map('map').setView([19.8, -70.7], 12);
 
-<script>
-/* ====== Config / internacionalización básica ====== */
-const LANGS = ['es','en','fr','it','zh'];
-let LANG = 'es';
-const langChips = document.querySelectorAll('.chip');
-langChips.forEach(chip => {
-  chip.addEventListener('click', ()=> {
-    langChips.forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');
-    LANG = chip.dataset.lang;
-    renderPlaces(currentPlaces);
-  });
-});
+    // Estilo visual del mapa (colorido, diferente de Google Maps)
+    L.tileLayer('https://{s}.tile.jawg.io/jawg-sunny/{z}/{x}/{y}{r}.png?access-token=YOUR_ACCESS_TOKEN', {
+      attribution: 'Map data © OpenStreetMap contributors',
+      minZoom: 10,
+      maxZoom: 18
+    }).addTo(map);
 
-/* ====== Mapa (estética diferente, colorido y claro) ====== */
-const map = L.map('map', {zoomControl:true}).setView([19.0, -69.5], 8);
+    // Cargar los lugares desde el archivo lugares.json
+    async function cargarLugares(provincia) {
+      const response = await fetch('lugares.json');
+      const data = await response.json();
 
-// custom tile (diferente a Google) — CARTO Voyager / Jawg fallback
-const tileUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
-L.tileLayer(tileUrl, { attribution: '© OpenStreetMap & CARTO' }).addTo(map);
+      // Limpiar marcadores anteriores
+      map.eachLayer((layer) => {
+        if (layer instanceof L.Marker) {
+          map.removeLayer(layer);
+        }
+      });
 
-/* clusters */
-const clusterGroup = L.markerClusterGroup({chunkedLoading:true});
-map.addLayer(clusterGroup);
+      // Filtrar por provincia seleccionada
+      const lugaresFiltrados = data.filter(l => l.provincia === provincia);
 
-/* estado */
-let currentPlaces = [];
-let currentProvince = '';
-let allPlaces = []; // cargar desde lugares.json
-let userMarker = null;
-let watchId = null;
+      // Añadir marcadores
+      lugaresFiltrados.forEach(lugar => {
+        const marker = L.marker([lugar.lat, lugar.lon]).addTo(map);
+        marker.bindPopup(`
+          <b>${lugar.nombre}</b><br>
+          ${lugar.descripcion}<br>
+          <b>Tipo:</b> ${lugar.tipo}<br>
+          <a href="${lugar.ruta}" target="_blank">🧭 Cómo llegar</a>
+        `);
+      });
 
-/* carga de datos (archivo JSON) */
-async function loadData(){
-  try{
-    const res = await fetch('lugares.json');
-    allPlaces = await res.json();
-  }catch(e){
-    alert('No se pudo cargar lugares.json. Asegúrate de subir el archivo.');
-    allPlaces = [];
-  }
-}
+      // Centrar mapa según provincia
+      if (provincia === "puertoplata") map.setView([19.8, -70.7], 12);
+      if (provincia === "puntacana") map.setView([18.58, -68.4], 12);
+    }
 
-/* Filtrar por provincia */
-function filterByProvince(prov){
-  return allPlaces.filter(p => p.province === prov);
-}
-
-/* Render en panel y mapa */
-function renderPlaces(list){
-  currentPlaces = list;
-  const container = document.getElementById('placesList');
-  container.innerHTML = '';
-  clusterGroup.clearLayers();
-
-  if(!list || list.length===0){
-    container.innerHTML = '<div class="meta">No hay lugares cargados. Selecciona provincia y pulsa Cargar.</div>';
-    return;
-  }
-
-  // agregar marcadores y lista
-  const bounds = [];
-  list.forEach((p, idx) => {
-    // elegir texto según idioma
-    const txt = (p.trans && p.trans[LANG]) ? p.trans[LANG] : p.trans['es'] || p.name;
-    const title = txt.name;
-    const desc = txt.desc || '';
-    const tipo = txt.type || p.type || '';
-
-    // marker style por tipo
-    const color = colorByType(p.type);
-    const marker = L.circleMarker(p.coords, {
-      radius: p.highlight ? 9 : 6,
-      color: '#fff',
-      weight:1,
-      fillColor: color,
-      fillOpacity: 0.95
+    // Evento al cambiar provincia
+    document.getElementById('provinceSelect').addEventListener('change', (e) => {
+      cargarLugares(e.target.value);
     });
 
-    // tooltip permanente nombre (estilizado con clase)
-    marker.bindTooltip(title, {permanent:true, direction:'top', className:'mylabel', offset:[0,-12]});
-
-    // popup con descripción y botones
-    marker.bindPopup(`
-      <div style="min-width:200px">
-        <strong>${title}</strong><br/>
-        <em style="color:#566">${tipo}</em><div style="margin-top:6px">${desc}</div>
-        <div style="margin-top:8px;display:flex;gap:6px">
-          <button onclick="getDirections(${p.coords[0]},${p.coords[1]})" style="flex:1;padding:6px;border-radius:6px;background:${getAccent()};color:#fff;border:none">${localize('directions')}</button>
-          <button onclick="scrollToListItem(${idx})" style="flex:1;padding:6px;border-radius:6px;background:#fff;border:1px solid #e0efee">${localize('show')}</button>
-        </div>
-      </div>`);
-
-    clusterGroup.addLayer(marker);
-    bounds.push(p.coords);
-
-    // list item
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `<div class="title">${title}</div><div class="small">${tipo} • ${p.zone || ''}</div>`;
-    div.onclick = ()=> {
-      map.setView(p.coords, 15);
-      marker.openPopup();
+    // Idiomas (traducción simple de interfaz)
+    const textos = {
+      es: { titulo: "Tu guía interactiva de Puerto Plata y Punta Cana" },
+      en: { titulo: "Your interactive guide to Puerto Plata and Punta Cana" },
+      fr: { titulo: "Votre guide interactif de Puerto Plata et Punta Cana" },
+      it: { titulo: "La tua guida interattiva di Puerto Plata e Punta Cana" },
+      zh: { titulo: "普拉塔港和蓬塔卡纳互动旅游指南" }
     };
-    container.appendChild(div);
-    p._listEl = div;
-    p._marker = marker;
-  });
 
-  if(bounds.length) map.fitBounds(bounds, {padding:[40,40], maxZoom:15});
-}
+    document.getElementById('languageSelect').addEventListener('change', (e) => {
+      const lang = e.target.value;
+      document.querySelector('header p').textContent = textos[lang].titulo;
+    });
 
-/* color por tipo */
-function colorByType(t){
-  t = (t||'').toLowerCase();
-  if(t.includes('playa')||t.includes('beach')) return '#0288d1';
-  if(t.includes('hotel')||t.includes('villa')||t.includes('resort')) return '#8e24aa';
-  if(t.includes('restaurante')||t.includes('restaurant')||t.includes('bar')) return '#ff7043';
-  if(t.includes('museo')||t.includes('históric')||t.includes('historic')) return '#f4c542';
-  if(t.includes('parque')||t.includes('nature')||t.includes('reserve')) return '#2e7d32';
-  if(t.includes('río')||t.includes('river')||t.includes('water')) return '#00bcd4';
-  return '#607d8b';
-}
-
-/* utilidad idioma UI */
-function localize(key){
-  const t = {
-    'directions': {'es':'Cómo llegar','en':'Get directions','fr':'Itinéraire','it':'Indicazioni','zh':'路线'},
-    'show': {'es':'Ver','en':'Show','fr':'Voir','it':'Mostra','zh':'显示'}
-  };
-  return (t[key] && t[key][LANG]) ? t[key][LANG] : key;
-}
-function getAccent(){ return '#00796b'; }
-
-/* Buscar y cargar */
-document.getElementById('btnLoad').addEventListener('click', async ()=>{
-  const prov = document.getElementById('province').value;
-  if(!prov){ alert('Selecciona la provincia / Select province'); return; }
-  if(allPlaces.length === 0) await loadData();
-  currentProvince = prov;
-  const filtered = filterByProvince(prov);
-  // aplicar búsqueda interna si hay texto
-  const q = document.getElementById('search').value.trim().toLowerCase();
-  const show = q ? filtered.filter(p=> (p.trans && JSON.stringify(p.trans).toLowerCase().includes(q)) || (p.type && p.type.toLowerCase().includes(q)) ) : filtered;
-  renderPlaces(show);
-});
-
-/* limpiar */
-document.getElementById('clearBtn').addEventListener('click', ()=>{
-  clusterGroup.clearLayers();
-  document.getElementById('placesList').innerHTML = '';
-  currentPlaces = [];
-  currentProvince = '';
-  map.setView([19.0,-69.5],8);
-});
-
-/* buscar dentro de lista (live) */
-document.getElementById('search').addEventListener('input', ()=>{
-  const q = document.getElementById('search').value.trim().toLowerCase();
-  if(!currentPlaces || currentPlaces.length===0) return;
-  const filtered = currentPlaces.filter(p => {
-    const txt = (p.trans && p.trans[LANG]) ? p.trans[LANG] : p.trans['es'];
-    return (txt.name && txt.name.toLowerCase().includes(q)) || (txt.desc && txt.desc.toLowerCase().includes(q)) || (p.type && p.type.toLowerCase().includes(q));
-  });
-  renderPlaces(filtered);
-});
-
-/* scroll a item de lista */
-function scrollToListItem(i){
-  if(!currentPlaces[i]) return;
-  const el = currentPlaces[i]._listEl;
-  if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
-}
-
-/* GET DIRECTIONS: abre Google Maps o OSM con la ruta desde usuario (si permite geoloc) */
-function getDirections(lat, lon){
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const origin = `${pos.coords.latitude},${pos.coords.longitude}`;
-      const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${lat},${lon}`;
-      window.open(url, '_blank');
-    }, ()=> window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank'));
-  } else {
-    window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
-  }
-}
-window.getDirections = getDirections;
-
-/* LOCALIZACIÓN EN TIEMPO REAL (usuario) */
-document.getElementById('locateBtn').addEventListener('click', ()=>{
-  if(!navigator.geolocation){ alert('Ubicación no soportada'); return; }
-  if(watchId){ // ya está activado -> detener
-    navigator.geolocation.clearWatch(watchId); watchId = null;
-    if(userMarker) { map.removeLayer(userMarker); userMarker = null; }
-    document.getElementById('userPosStatus').innerText = 'Ubicación: desactivada';
-    return;
-  }
-  watchId = navigator.geolocation.watchPosition(pos=>{
-    const lat = pos.coords.latitude, lon=pos.coords.longitude;
-    if(!userMarker){
-      userMarker = L.circleMarker([lat,lon], {radius:8, fillColor:'#ff5252', color:'#fff', weight:1, fillOpacity:0.95}).addTo(map).bindPopup(localize('youHere') || 'Tu ubicación');
-    } else {
-      userMarker.setLatLng([lat,lon]);
-    }
-    document.getElementById('userPosStatus').innerText = `Ubicación: activada (${lat.toFixed(4)}, ${lon.toFixed(4)})`;
-  }, err=>{
-    alert('Permite la ubicación en tu navegador para ver la ruta y tu posición.');
-  }, {enableHighAccuracy:true, maximumAge:30000, timeout:10000});
-});
-
-/* texto para 'youHere' según idioma */
-const youHereText = {es:'Estás aquí', en:'You are here', fr:'Vous êtes ici', it:'Sei qui', zh:'你在这里'};
-
-/* asegurar localize para youHere */
-function localize(str){
-  if(str === 'youHere') return youHereText[LANG] || youHereText['es'];
-  return localize;
-}
-
-/* INSTALABLE - PWA: mostrar botón instalar si hay prompt */
-let deferredPrompt;
-const btnInstall = document.getElementById('btnInstall');
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  btnInstall.style.display = 'inline-block';
-});
-btnInstall.addEventListener('click', async () => {
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  const choice = await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  btnInstall.style.display = 'none';
-});
-
-/* Register service worker (PWA) */
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(console.warn);
-}
-
-/* Inicio: cargar datos en background (no render) */
-loadData();
-</script>
+    // Cargar por defecto Puerto Plata
+    cargarLugares("puertoplata");
+  </script>
 </body>
 </html>
