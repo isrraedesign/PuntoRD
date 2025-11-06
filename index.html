@@ -1,224 +1,98 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>PuntoRD — Puerto Plata & Punta Cana</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PuntoRD — Guía Turística</title>
 
-  <!-- Leaflet CSS -->
+  <!-- Estilos de Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <!-- Tu CSS -->
+  <!-- Tu hoja de estilo personalizada -->
   <link rel="stylesheet" href="style.css" />
-</head><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><body><div id="map"></div><div id="map"></div>
+</head>
+<body>
   <header>
-    <div class="brand">
-      <h1>🌴 PuntoRD</h1>
-      <div class="subtitle">Tu guía interactiva de Puerto Plata & Punta Cana</div>
-    </div>
+    <h1>🌴 PuntoRD — Guía Turística Interactiva</h1>
+    <p id="descripcion">Descubre los mejores lugares de Puerto Plata y Punta Cana</p>
 
-    <div class="controls">
-      <select id="languageSelect" aria-label="Idioma">
-        <option value="es">Español</option>
-        <option value="en">English</option>
+    <div class="controles">
+      <label for="languageSelect">Idioma:</label>
+      <select id="languageSelect">
+        <option value="es">Español 🇪🇸</option>
+        <option value="en">English 🇬🇧</option>
       </select>
 
-      <select id="provinceSelect" aria-label="Provincia">
-        <option value="">-- Seleccionar provincia --</option>
-        <option value="puerto_plata">Puerto Plata</option>
-        <option value="la_altagracia">Punta Cana (La Altagracia)</option>
+      <label for="provinceSelect">Provincia:</label>
+      <select id="provinceSelect">
+        <option value="puertoplata">Puerto Plata</option>
+        <option value="puntacana">Punta Cana</option>
       </select>
-
-      <button id="loadBtn">Cargar</button>
-      <button id="locateBtn">Mi ubicación</button>
     </div>
   </header>
 
-  <main id="main">
-    <aside id="sidebar">
-      <input id="search" placeholder="Buscar (nombre / tipo)" />
-      <div id="list" class="list"></div>
-    </aside>
+  <!-- AQUÍ VA EL MAPA -->
+  <div id="map"></div>
 
-    <div id="map"></div>
-  </main>
+  <footer>
+    <p>© 2025 PuntoRD — República Dominicana 🌴</p>
+  </footer>
 
-  <footer>© 2025 PuntoRD — Guía Turística</footer>
-
-  <!-- Leaflet JS -->
+  <!-- Scripts de Leaflet -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-  // --- Config inicial ---
-  const LANG = { current: 'es' };
-  const markers = [];
-  let map, clusterLayer;
-  let userMarker = null;
-  let watchId = null;
-  let lugaresData = [];
+    // Crear mapa
+    const map = L.map('map').setView([19.78, -70.68], 12);
 
-  // Inicializar mapa (OpenStreetMap tiles, sin token)
-  function initMap() {
-    map = L.map('map').setView([19.78, -70.68], 10);
-
+    // Capa de mapa libre (OpenStreetMap)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // opcional: grupo de marcadores (sin librería adicional usamos layerGroup)
-    clusterLayer = L.layerGroup().addTo(map);
-  }
+    // Cargar lugares desde JSON
+    async function cargarLugares(provincia) {
+      const respuesta = await fetch('lugares.json');
+      const lugares = await respuesta.json();
 
-  // Cargar JSON de lugares
-  async function loadLugares() {
-    try {
-      const res = await fetch('lugares.json');
-      lugaresData = await res.json();
-      console.log('Lugares cargados', lugaresData.length);
-    } catch (e) {
-      alert('No se pudo cargar lugares.json: ' + e.message);
-    }
-  }
-
-  // Filtrar por provincia y mostrar
-  function mostrarProvincia(prov) {
-    clusterLayer.clearLayers();
-    document.getElementById('list').innerHTML = '';
-
-    const lista = lugaresData.filter(p => p.provincia === prov);
-    if(!lista.length) {
-      document.getElementById('list').innerHTML = '<div class="meta">No hay puntos para esta provincia.</div>';
-      return;
-    }
-
-    const bounds = [];
-    lista.forEach((p, i) => {
-      // elegir texto según idioma
-      const text = (p.trans && p.trans[LANG.current]) ? p.trans[LANG.current] : { name: p.nombre, desc: p.descripcion };
-      const color = colorByType(p.tipo);
-
-      const marker = L.circleMarker([p.lat, p.lon], {
-        radius: p.highlight ? 9 : 6,
-        color: '#fff',
-        weight: 1,
-        fillColor: color,
-        fillOpacity: 0.95
+      // Borrar marcadores anteriores
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) map.removeLayer(layer);
       });
 
-      const popupHtml = `
-        <div style="min-width:220px">
-          <strong>${escapeHtml(text.name)}</strong><br>
-          <em>${p.tipo}</em><div style="margin-top:6px">${escapeHtml(text.desc)}</div>
-          <div style="margin-top:8px;display:flex;gap:6px">
-            <button onclick="getDirections(${p.lat},${p.lon})"> ${LANG.current==='es' ? 'Cómo llegar' : 'Get directions'} </button>
-            <button onclick="zoomTo(${p.lat},${p.lon})">${LANG.current==='es' ? 'Ver' : 'Show'}</button>
-          </div>
-        </div>
-      `;
+      // Filtrar lugares por provincia
+      const filtrados = lugares.filter(l => l.provincia === provincia);
 
-      marker.bindPopup(popupHtml);
-      marker.bindTooltip(text.name, {permanent:true, direction:'top', className:'mylabel', offset:[0,-12]});
+      // Agregar marcadores al mapa
+      filtrados.forEach(lugar => {
+        const marker = L.marker([lugar.lat, lugar.lon]).addTo(map);
+        marker.bindPopup(`<b>${lugar.nombre}</b><br>${lugar.descripcion}<br><a href="${lugar.ruta}" target="_blank">🧭 Cómo llegar</a>`);
+      });
 
-      marker.addTo(clusterLayer);
-      markers.push(marker);
-      bounds.push([p.lat, p.lon]);
-
-      // lista lateral
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `<div class="title">${escapeHtml(text.name)}</div><div class="small">${escapeHtml(p.tipo)}</div>`;
-      div.addEventListener('click', ()=>{ map.setView([p.lat,p.lon], 15); marker.openPopup(); });
-      document.getElementById('list').appendChild(div);
-    });
-
-    if(bounds.length) map.fitBounds(bounds, {padding:[40,40], maxZoom:15});
-  }
-
-  // color por tipo simple
-  function colorByType(type){
-    type = (type||'').toLowerCase();
-    if(type.includes('playa')||type.includes('beach')) return '#0288d1';
-    if(type.includes('hotel')||type.includes('villa')||type.includes('resort')) return '#8e24aa';
-    if(type.includes('restaurante')||type.includes('restaurant')||type.includes('bar')) return '#ff7043';
-    if(type.includes('museo')||type.includes('históric')) return '#f4c542';
-    if(type.includes('parque')||type.includes('reserve')||type.includes('nature')) return '#2e7d32';
-    return '#607d8b';
-  }
-
-  // escape para insertar texto seguro en HTML
-  function escapeHtml(s){ return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-
-  // zoom a coordenada
-  function zoomTo(lat,lon){ map.setView([lat,lon],15); }
-
-  // abrir dirección en Google Maps (desde la ubicación del usuario si permite)
-  function getDirections(lat, lon){
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(pos=>{
-        const origin = `${pos.coords.latitude},${pos.coords.longitude}`;
-        const url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${lat},${lon}`;
-        window.open(url, '_blank');
-      }, ()=> window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank'));
-    } else {
-      window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
+      // Centrar mapa según provincia
+      if (provincia === "puertoplata") map.setView([19.78, -70.68], 12);
+      if (provincia === "puntacana") map.setView([18.68, -68.4], 12);
     }
-  }
-  window.getDirections = getDirections;
-  window.zoomTo = zoomTo;
 
-  // Geolocalización en tiempo real (watchPosition)
-  function toggleLocate(){
-    if(watchId){
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-      if(userMarker) map.removeLayer(userMarker);
-      document.getElementById('locateBtn').textContent = LANG.current==='es' ? 'Mi ubicación' : 'My location';
-      return;
-    }
-    if(!navigator.geolocation){ alert('Geolocalización no disponible'); return; }
-    watchId = navigator.geolocation.watchPosition(pos=>{
-      const lat = pos.coords.latitude, lon = pos.coords.longitude;
-      if(!userMarker){
-        userMarker = L.circleMarker([lat,lon], {radius:8, fillColor:'#ff5252', color:'#fff', weight:1, fillOpacity:0.95}).addTo(map).bindPopup(LANG.current==='es' ? 'Estás aquí' : 'You are here');
-      } else { userMarker.setLatLng([lat,lon]); }
-      document.getElementById('locateBtn').textContent = (LANG.current==='es' ? 'Detener ubicación' : 'Stop location');
-    }, err => { alert('Permite la ubicación en tu navegador'); }, {enableHighAccuracy:true, maximumAge:30000, timeout:10000});
-  }
-
-  // Buscar en la lista cargada (filtro)
-  function buscar(q){
-    q = (q||'').toLowerCase();
-    const items = Array.from(document.querySelectorAll('#list .item'));
-    items.forEach(it => {
-      const text = it.innerText.toLowerCase();
-      it.style.display = text.includes(q) ? 'block' : 'none';
-    });
-  }
-
-  // eventos UI
-  document.addEventListener('DOMContentLoaded', async ()=>{
-    initMap();
-    await loadLugares();
-
-    document.getElementById('loadBtn').addEventListener('click', ()=>{
-      const prov = document.getElementById('provinceSelect').value;
-      if(!prov){ alert('Selecciona una provincia'); return; }
-      mostrarProvincia(prov);
+    // Cambiar provincia
+    document.getElementById('provinceSelect').addEventListener('change', e => {
+      cargarLugares(e.target.value);
     });
 
-    document.getElementById('languageSelect').addEventListener('change', (e)=>{
-      LANG.current = e.target.value;
-      // recargar lista/markers con nuevo idioma si ya hubo carga
-      const prov = document.getElementById('provinceSelect').value;
-      if(prov) mostrarProvincia(prov);
-      document.getElementById('locateBtn').textContent = LANG.current==='es' ? 'Mi ubicación' : 'My location';
+    // Cambiar idioma
+    const textos = {
+      es: "Descubre los mejores lugares de Puerto Plata y Punta Cana",
+      en: "Discover the best places in Puerto Plata and Punta Cana"
+    };
+
+    document.getElementById('languageSelect').addEventListener('change', e => {
+      const lang = e.target.value;
+      document.getElementById('descripcion').textContent = textos[lang];
     });
 
-    document.getElementById('locateBtn').addEventListener('click', toggleLocate);
-
-    document.getElementById('search').addEventListener('input', (e)=> buscar(e.target.value) );
-  });
+    // Cargar por defecto Puerto Plata
+    cargarLugares("puertoplata");
   </script>
 </body>
 </html>
