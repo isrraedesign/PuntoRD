@@ -1,0 +1,12 @@
+{
+  "puertoplata": [
+    {"coords":[19.773,-70.698],"es":{"nombre":"Teleférico de Puerto Plata","desc":"Vista panorámica desde el monte Isabel de Torres."},"en":{"nombre":"Puerto Plata Cable Car","desc":"Panoramic view from Isabel de Torres mountain."}},
+    {"coords":[19.755,-70.519],"es":{"nombre":"Playa Sosúa","desc":"Arena dorada y aguas claras."},"en":{"nombre":"Sosúa Beach","desc":"Golden sand and clear waters."}},
+    {"coords":[19.792,-70.694],"es":{"nombre":"Malecón de Puerto Plata","desc":"Zona costera con bares, música y restaurantes."},"en":{"nombre":"Puerto Plata Boardwalk","desc":"Coastal area with bars, music and restaurants."}}
+  ],
+  "puntacana": [
+    {"coords":[18.581,-68.404],"es":{"nombre":"Playa Bávaro","desc":"Una de las playas más hermosas del Caribe."},"en":{"nombre":"Bávaro Beach","desc":"One of the most beautiful beaches in the Caribbean."}},
+    {"coords":[18.562,-68.388],"es":{"nombre":"Coco Bongo Punta Cana","desc":"Famoso club con espectáculos en vivo."},"en":{"nombre":"Coco Bongo Punta Cana","desc":"Famous club with live shows."}},
+    {"coords":[18.520,-68.390],"es":{"nombre":"Downtown Mall","desc":"Centro comercial moderno con tiendas y restaurantes."},"en":{"nombre":"Downtown Mall","desc":"Modern shopping center with restaurants and stores."}}
+  ]
+}
