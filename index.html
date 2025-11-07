@@ -19,25 +19,21 @@
     body {
       margin: 0;
       font-family: "Poppins", sans-serif;
-      background-color: #f3fcf8;
+      background: #f0f9f8;
     }
 
     header {
-      background: linear-gradient(90deg, #00796b, #004d40);
+      background: linear-gradient(90deg, #009688, #004d40);
       color: white;
       text-align: center;
-      padding: 12px 0;
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 22px;
-      letter-spacing: 0.5px;
+      padding: 10px 0;
     }
 
     #map {
-      height: calc(100vh - 120px);
+      height: calc(100vh - 130px);
       width: 100%;
+      border-top: 2px solid #004d40;
+      border-bottom: 2px solid #004d40;
     }
 
     footer {
@@ -45,29 +41,28 @@
       background-color: #004d40;
       color: white;
       font-size: 13px;
-      padding: 10px;
-    }
-
-    select {
-      margin: 6px;
-      padding: 6px;
-      border-radius: 5px;
-      border: none;
-      font-size: 14px;
-      background-color: #e0f2f1;
-      color: #004d40;
-      font-weight: bold;
+      padding: 8px;
     }
 
     #routeInfo {
-      background: rgba(255, 255, 255, 0.9);
       position: absolute;
       bottom: 20px;
       left: 20px;
+      background: rgba(255, 255, 255, 0.9);
       padding: 10px;
       border-radius: 8px;
       font-size: 13px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      max-width: 280px;
+    }
+
+    select {
+      padding: 5px;
+      border-radius: 6px;
+      border: none;
+      background-color: #e0f2f1;
+      font-weight: bold;
+      color: #004d40;
     }
   </style>
 </head>
@@ -75,7 +70,7 @@
 <body>
   <header>
     <h1>🌴 PuntoRD — Puerto Plata</h1>
-    <p>Explora las mejores rutas y destinos turísticos de Puerto Plata</p>
+    <p>Guía turística en tiempo real para explorar Puerto Plata</p>
     <select id="languageSelect">
       <option value="es">Español 🇪🇸</option>
       <option value="en">English 🇬🇧</option>
@@ -83,124 +78,107 @@
   </header>
 
   <div id="map"></div>
-  <div id="routeInfo">Selecciona un lugar para ver la ruta 🚗</div>
+  <div id="routeInfo">📍 Selecciona un lugar para ver la ruta y tiempo estimado.</div>
 
-  <footer>© 2025 PuntoRD — Guía Turística de Puerto Plata 🌊</footer>
+  <footer>© 2025 PuntoRD — Guía Turística de Puerto Plata</footer>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Inicializar mapa centrado solo en Puerto Plata
+    // Mapa centrado solo en Puerto Plata
     const map = L.map("map", {
-      zoomControl: true,
       minZoom: 11,
-      maxZoom: 16
+      maxZoom: 17,
+      zoomControl: true
     }).setView([19.79, -70.69], 12);
 
-    // Capa base
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap contributors"
+    // Diseño de mapa tipo turístico (carto light)
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: "© OpenStreetMap, © CartoDB"
     }).addTo(map);
 
-    // Limitar la vista del mapa a Puerto Plata
-    const bounds = L.latLngBounds(
-      [19.69, -70.85], // Suroeste
-      [19.89, -70.55]  // Noreste
-    );
+    // Limitar la vista SOLO a Puerto Plata
+    const bounds = L.latLngBounds([19.68, -70.85], [19.90, -70.55]);
     map.setMaxBounds(bounds);
-    map.on("drag", function () {
-      map.panInsideBounds(bounds, { animate: false });
-    });
+    map.on("drag", () => map.panInsideBounds(bounds, { animate: false }));
 
-    // Íconos
+    // Íconos personalizados
     const icons = {
-      playa: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png",
-        iconSize: [30, 30]
-      }),
-      hotel: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/139/139899.png",
-        iconSize: [28, 28]
-      }),
-      restaurante: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
-        iconSize: [28, 28]
-      }),
-      parque: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png",
-        iconSize: [28, 28]
-      }),
-      museo: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png",
-        iconSize: [28, 28]
-      }),
-      default: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
-        iconSize: [26, 26]
-      })
+      playa: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png", iconSize: [28, 28] }),
+      hotel: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/139/139899.png", iconSize: [28, 28] }),
+      restaurante: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png", iconSize: [28, 28] }),
+      parque: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png", iconSize: [28, 28] }),
+      museo: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png", iconSize: [28, 28] }),
+      default: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png", iconSize: [24, 24] })
     };
 
-    let routingControl;
+    let userMarker = null;
+    let routingControl = null;
 
-    // Cargar lugares desde lugares.json
-    async function cargarLugares() {
-      try {
-        const response = await fetch("lugares.json");
-        const data = await response.json();
-
-        data.categoria.forEach((categoria) => {
-          categoria.lugares.forEach((lugar) => {
-            const icono = icons[categoria.tipo] || icons.default;
-            const marker = L.marker([lugar.lat, lugar.lng], { icon: icono })
-              .addTo(map)
-              .bindPopup(`<b>${lugar.nombre}</b><br>${lugar.idiomas.es}<br><button onclick="mostrarRuta(${lugar.lat}, ${lugar.lng})">📍 Ver ruta</button>`);
-          });
-        });
-      } catch (error) {
-        console.error("Error al cargar lugares:", error);
+    // Mostrar ubicación del usuario en tiempo real
+    function rastrearUsuario() {
+      if (!navigator.geolocation) {
+        alert("Tu navegador no permite geolocalización.");
+        return;
       }
+
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          if (!userMarker) {
+            userMarker = L.marker([lat, lng], {
+              title: "Tu ubicación actual"
+            }).addTo(map);
+          } else {
+            userMarker.setLatLng([lat, lng]);
+          }
+        },
+        () => alert("No se puede obtener tu ubicación."),
+        { enableHighAccuracy: true }
+      );
     }
 
-    cargarLugares();
-
-    // Mostrar ruta desde ubicación actual
+    // Mostrar ruta
     function mostrarRuta(lat, lng) {
+      if (!userMarker) {
+        alert("Activa la ubicación primero para ver rutas.");
+        return;
+      }
+
       if (routingControl) {
         map.removeControl(routingControl);
       }
 
-      if (!navigator.geolocation) {
-        alert("La geolocalización no está disponible en tu navegador.");
-        return;
-      }
+      const userPos = userMarker.getLatLng();
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const userLat = pos.coords.latitude;
-          const userLng = pos.coords.longitude;
-
-          routingControl = L.Routing.control({
-            waypoints: [
-              L.latLng(userLat, userLng),
-              L.latLng(lat, lng)
-            ],
-            routeWhileDragging: false,
-            lineOptions: {
-              styles: [{ color: "#00796b", weight: 5 }]
-            },
-            createMarker: function() { return null; }
-          }).addTo(map);
-
-          document.getElementById("routeInfo").textContent =
-            "Calculando ruta... 🚗";
-        },
-        () => {
-          alert("No se pudo obtener tu ubicación.");
-        }
-      );
+      routingControl = L.Routing.control({
+        waypoints: [L.latLng(userPos.lat, userPos.lng), L.latLng(lat, lng)],
+        lineOptions: { styles: [{ color: "#009688", weight: 5 }] },
+        createMarker: () => null,
+        addWaypoints: false
+      }).addTo(map);
     }
+
+    // Cargar lugares
+    async function cargarLugares() {
+      const res = await fetch("lugares.json");
+      const data = await res.json();
+
+      data.categoria.forEach(cat => {
+        cat.lugares.forEach(lugar => {
+          const icono = icons[cat.tipo] || icons.default;
+          const marker = L.marker([lugar.lat, lugar.lng], { icon: icono }).addTo(map);
+          marker.bindPopup(`<b>${lugar.nombre}</b><br>${lugar.idiomas.es}<br>
+            <button onclick="mostrarRuta(${lugar.lat}, ${lugar.lng})">🚗 Ver ruta</button>`);
+        });
+      });
+    }
+
+    rastrearUsuario();
+    cargarLugares();
   </script>
 </body>
 </html>
