@@ -15,107 +15,53 @@
     href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
   />
 
-  <style>
-    body {
-      margin: 0;
-      font-family: "Poppins", sans-serif;
-      background: #f0f9f8;
-    }
-
-    header {
-      background: linear-gradient(90deg, #009688, #004d40);
-      color: white;
-      text-align: center;
-      padding: 10px 0;
-    }
-
-    #map {
-      height: calc(100vh - 130px);
-      width: 100%;
-      border-top: 2px solid #004d40;
-      border-bottom: 2px solid #004d40;
-    }
-
-    footer {
-      text-align: center;
-      background-color: #004d40;
-      color: white;
-      font-size: 13px;
-      padding: 8px;
-    }
-
-    #routeInfo {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      max-width: 280px;
-    }
-
-    select {
-      padding: 5px;
-      border-radius: 6px;
-      border: none;
-      background-color: #e0f2f1;
-      font-weight: bold;
-      color: #004d40;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <header>
-    <h1>🌴 PuntoRD — Puerto Plata</h1>
-    <p>Guía turística en tiempo real para explorar Puerto Plata</p>
-    <select id="languageSelect">
-      <option value="es">Español 🇪🇸</option>
-      <option value="en">English 🇬🇧</option>
-    </select>
-  </header>
+  <div id="sidebar">
+    <h2>🌴 Lugares de Puerto Plata</h2>
+    <input type="text" id="search" placeholder="Buscar lugar..." />
+    <ul id="listaLugares"></ul>
+  </div>
 
   <div id="map"></div>
-  <div id="routeInfo">📍 Selecciona un lugar para ver la ruta y tiempo estimado.</div>
-
-  <footer>© 2025 PuntoRD — Guía Turística de Puerto Plata</footer>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Mapa centrado solo en Puerto Plata
     const map = L.map("map", {
+      zoomControl: true,
       minZoom: 11,
-      maxZoom: 17,
-      zoomControl: true
+      maxZoom: 17
     }).setView([19.79, -70.69], 12);
 
-    // Diseño de mapa tipo turístico (carto light)
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: "© OpenStreetMap, © CartoDB"
-    }).addTo(map);
+    // Mapa con diseño turístico (no estilo Google)
+    L.tileLayer(
+      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png",
+      { attribution: "© OpenStreetMap, © CartoDB" }
+    ).addTo(map);
 
-    // Limitar la vista SOLO a Puerto Plata
-    const bounds = L.latLngBounds([19.68, -70.85], [19.90, -70.55]);
+    // Limitar a Puerto Plata
+    const bounds = L.latLngBounds([19.68, -70.85], [19.9, -70.55]);
     map.setMaxBounds(bounds);
     map.on("drag", () => map.panInsideBounds(bounds, { animate: false }));
 
-    // Íconos personalizados
+    // Íconos pequeños y personalizados
     const icons = {
-      playa: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png", iconSize: [28, 28] }),
-      hotel: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/139/139899.png", iconSize: [28, 28] }),
-      restaurante: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png", iconSize: [28, 28] }),
-      parque: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png", iconSize: [28, 28] }),
-      museo: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png", iconSize: [28, 28] }),
-      default: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png", iconSize: [24, 24] })
+      playa: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png", iconSize: [20, 20] }),
+      hotel: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/139/139899.png", iconSize: [20, 20] }),
+      restaurante: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png", iconSize: [20, 20] }),
+      parque: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png", iconSize: [20, 20] }),
+      museo: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png", iconSize: [20, 20] }),
+      default: L.icon({ iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png", iconSize: [18, 18] })
     };
 
     let userMarker = null;
     let routingControl = null;
+    let markers = [];
 
     // Mostrar ubicación del usuario en tiempo real
     function rastrearUsuario() {
@@ -147,11 +93,7 @@
         alert("Activa la ubicación primero para ver rutas.");
         return;
       }
-
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
-
+      if (routingControl) map.removeControl(routingControl);
       const userPos = userMarker.getLatLng();
 
       routingControl = L.Routing.control({
@@ -166,16 +108,41 @@
     async function cargarLugares() {
       const res = await fetch("lugares.json");
       const data = await res.json();
+      const lista = document.getElementById("listaLugares");
+      lista.innerHTML = "";
 
       data.categoria.forEach(cat => {
         cat.lugares.forEach(lugar => {
           const icono = icons[cat.tipo] || icons.default;
-          const marker = L.marker([lugar.lat, lugar.lng], { icon: icono }).addTo(map);
-          marker.bindPopup(`<b>${lugar.nombre}</b><br>${lugar.idiomas.es}<br>
-            <button onclick="mostrarRuta(${lugar.lat}, ${lugar.lng})">🚗 Ver ruta</button>`);
+          const marker = L.marker([lugar.lat, lugar.lng], { icon: icono })
+            .addTo(map)
+            .bindPopup(`<b>${lugar.nombre}</b><br>${lugar.idiomas.es}<br>
+              <button onclick="mostrarRuta(${lugar.lat}, ${lugar.lng})">🚗 Ver ruta</button>`);
+
+          markers.push({ marker, nombre: lugar.nombre.toLowerCase() });
+
+          const item = document.createElement("li");
+          item.textContent = `📍 ${lugar.nombre}`;
+          item.onclick = () => {
+            map.setView([lugar.lat, lugar.lng], 15);
+            marker.openPopup();
+          };
+          lista.appendChild(item);
         });
       });
     }
+
+    // Buscar lugares
+    document.getElementById("search").addEventListener("input", (e) => {
+      const valor = e.target.value.toLowerCase();
+      markers.forEach(({ marker, nombre }) => {
+        if (nombre.includes(valor)) {
+          marker.addTo(map);
+        } else {
+          map.removeLayer(marker);
+        }
+      });
+    });
 
     rastrearUsuario();
     cargarLugares();
