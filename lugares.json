@@ -1,0 +1,227 @@
+[
+  {
+    "provincia": "puertoplata",
+    "nombre": "Teleférico de Puerto Plata",
+    "descripcion": "Sube al monte Isabel de Torres con vistas panorámicas y un Cristo Redentor en la cima.",
+    "lat": 19.754,
+    "lon": -70.707,
+    "categoria": "atraccion",
+    "ruta": "https://goo.gl/maps/WbUNfN2WzJ52"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Fuerte San Felipe",
+    "descripcion": "Fortaleza colonial del siglo XVI con museo y vistas al mar Atlántico.",
+    "lat": 19.796,
+    "lon": -70.700,
+    "categoria": "historia",
+    "ruta": "https://goo.gl/maps/4HZH2t1hVx12"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Malecón de Puerto Plata",
+    "descripcion": "Hermoso paseo costero con bares, tiendas, esculturas y ambiente local.",
+    "lat": 19.790,
+    "lon": -70.690,
+    "categoria": "paseo",
+    "ruta": "https://goo.gl/maps/EfdzqZjHhxm"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Playa Dorada",
+    "descripcion": "Playa principal con arena dorada, hoteles todo incluido y deportes acuáticos.",
+    "lat": 19.771,
+    "lon": -70.640,
+    "categoria": "playa",
+    "ruta": "https://goo.gl/maps/9oYkgdrUZfG2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Ocean World Adventure Park",
+    "descripcion": "Parque marino con espectáculos de delfines y actividades acuáticas.",
+    "lat": 19.813,
+    "lon": -70.725,
+    "categoria": "diversion",
+    "ruta": "https://goo.gl/maps/5H1pNfJr5mH2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Calle de las Sombrillas",
+    "descripcion": "Calle peatonal colorida con arte local, tiendas y cafeterías.",
+    "lat": 19.792,
+    "lon": -70.688,
+    "categoria": "cultural",
+    "ruta": "https://goo.gl/maps/SkRPHMCtLgE2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Parque Central Independencia",
+    "descripcion": "Plaza principal con la Catedral San Felipe Apóstol y arquitectura victoriana.",
+    "lat": 19.793,
+    "lon": -70.688,
+    "categoria": "parque",
+    "ruta": "https://goo.gl/maps/VV9dMNoZyQS2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Catedral San Felipe Apóstol",
+    "descripcion": "Iglesia icónica con vitrales y estilo neogótico en el corazón de la ciudad.",
+    "lat": 19.793,
+    "lon": -70.688,
+    "categoria": "religioso",
+    "ruta": "https://goo.gl/maps/YcSSCeDkXx72"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Amber Cove Cruise Port",
+    "descripcion": "Puerto turístico de cruceros con tiendas, piscinas y excursiones.",
+    "lat": 19.831,
+    "lon": -70.876,
+    "categoria": "puerto",
+    "ruta": "https://goo.gl/maps/t3F7JphwTwD2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "27 Charcos de Damajagua",
+    "descripcion": "Aventura en cascadas naturales y toboganes de roca, ideal para ecoturismo.",
+    "lat": 19.733,
+    "lon": -70.813,
+    "categoria": "aventura",
+    "ruta": "https://goo.gl/maps/zV7oVcfRMwC2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Casa Museo General Gregorio Luperón",
+    "descripcion": "Museo histórico sobre el héroe nacional dominicano.",
+    "lat": 19.793,
+    "lon": -70.688,
+    "categoria": "museo",
+    "ruta": "https://goo.gl/maps/YmQbZx8uAps"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Long Beach",
+    "descripcion": "Playa popular para surfistas y caminatas al atardecer.",
+    "lat": 19.786,
+    "lon": -70.682,
+    "categoria": "playa",
+    "ruta": "https://goo.gl/maps/g3tWWT8B3Lz"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Réplica de la Zona Victoriana",
+    "descripcion": "Casas coloridas con arquitectura del siglo XIX en el centro histórico.",
+    "lat": 19.792,
+    "lon": -70.687,
+    "categoria": "cultural",
+    "ruta": "https://goo.gl/maps/KJkHUSfvdLr"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Sosúa Beach",
+    "descripcion": "Famosa playa con aguas cristalinas, restaurantes y vida nocturna.",
+    "lat": 19.767,
+    "lon": -70.516,
+    "categoria": "playa",
+    "ruta": "https://goo.gl/maps/bH8mFDgbnUU2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Cabarete Beach",
+    "descripcion": "Playa reconocida mundialmente para kitesurf, surf y windsurf.",
+    "lat": 19.751,
+    "lon": -70.408,
+    "categoria": "playa",
+    "ruta": "https://goo.gl/maps/UkKqXbqN7Hx"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Monkey Jungle Zipline",
+    "descripcion": "Reserva ecológica con tirolesa, monos capuchinos y rutas en selva.",
+    "lat": 19.669,
+    "lon": -70.526,
+    "categoria": "aventura",
+    "ruta": "https://goo.gl/maps/FjGRuGr6L3D2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Puerto Plata City Tour Taxi Station",
+    "descripcion": "Parada de taxis turísticos frente al parque central.",
+    "lat": 19.792,
+    "lon": -70.689,
+    "categoria": "transporte",
+    "ruta": "https://goo.gl/maps/tQpEGzjZhZw"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Avis Rent a Car Puerto Plata",
+    "descripcion": "Oficina para alquiler de autos turísticos cerca del aeropuerto.",
+    "lat": 19.757,
+    "lon": -70.570,
+    "categoria": "alquiler",
+    "ruta": "https://goo.gl/maps/Vs5GjAMn1ZD2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Puerto Plata International Airport (POP)",
+    "descripcion": "Aeropuerto Gregorio Luperón, principal punto de entrada turística.",
+    "lat": 19.757,
+    "lon": -70.570,
+    "categoria": "aeropuerto",
+    "ruta": "https://goo.gl/maps/XQYZVydKFRS2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Hotel Blue JackTar",
+    "descripcion": "Resort frente a la playa Dorada con campo de golf y spa.",
+    "lat": 19.774,
+    "lon": -70.640,
+    "categoria": "hotel",
+    "ruta": "https://goo.gl/maps/VnDqXwZxEzz"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Villas Agua Dulce",
+    "descripcion": "Complejo de villas privadas con piscina y vista al mar.",
+    "lat": 19.756,
+    "lon": -70.497,
+    "categoria": "villa",
+    "ruta": "https://goo.gl/maps/TjC3YHd3dRC2"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Hotel Iberostar Costa Dorada",
+    "descripcion": "Hotel todo incluido frente al mar, con restaurantes gourmet y shows nocturnos.",
+    "lat": 19.767,
+    "lon": -70.660,
+    "categoria": "hotel",
+    "ruta": "https://goo.gl/maps/JdD5xqJ5HQp"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Parque Nacional Isabel de Torres",
+    "descripcion": "Reserva natural con flora, fauna y el Cristo Redentor en la cima.",
+    "lat": 19.754,
+    "lon": -70.707,
+    "categoria": "naturaleza",
+    "ruta": "https://goo.gl/maps/tv6S2qF9WZp"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Malecon Taxi Station",
+    "descripcion": "Parada principal de taxis en el malecón, junto a bares y restaurantes.",
+    "lat": 19.788,
+    "lon": -70.688,
+    "categoria": "transporte",
+    "ruta": "https://goo.gl/maps/k8ZfDP6rSGo"
+  },
+  {
+    "provincia": "puertoplata",
+    "nombre": "Río Sonador",
+    "descripcion": "Río natural en Yásica con zonas para bañarse y picnic familiar.",
+    "lat": 19.709,
+    "lon": -70.564,
+    "categoria": "rio",
+    "ruta": "https://goo.gl/maps/ySoQ6mLVZkN2"
+  }
+]
