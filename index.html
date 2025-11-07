@@ -3,96 +3,178 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PuntoRD — Guía Turística</title>
+  <title>PuntoRD - Puerto Plata</title>
 
-  <!-- Estilos de Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
 
-  <!-- Tu hoja de estilo personalizada -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- Estilos -->
+  <style>
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      background-color: #f4fdfb;
+    }
+
+    header {
+      background: linear-gradient(90deg, #00796b, #004d40);
+      color: white;
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    #map {
+      height: calc(100vh - 140px);
+      width: 100%;
+      border-top: 3px solid #004d40;
+      border-bottom: 3px solid #004d40;
+    }
+
+    footer {
+      text-align: center;
+      background-color: #004d40;
+      color: white;
+      font-size: 13px;
+      padding: 10px;
+    }
+
+    .controles {
+      margin-top: 8px;
+    }
+
+    select {
+      margin: 5px;
+      padding: 6px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      background-color: #e0f2f1;
+      color: #004d40;
+      font-weight: bold;
+    }
+  </style>
 </head>
+
 <body>
   <header>
-    <h1>🌴 PuntoRD — Guía Turística Interactiva</h1>
-    <p id="descripcion">Descubre los mejores lugares de Puerto Plata y Punta Cana</p>
-
+    <h1>🌴 PuntoRD — Puerto Plata</h1>
+    <p id="descripcion">Descubre los mejores lugares turísticos de Puerto Plata</p>
     <div class="controles">
       <label for="languageSelect">Idioma:</label>
       <select id="languageSelect">
         <option value="es">Español 🇪🇸</option>
         <option value="en">English 🇬🇧</option>
       </select>
-
-      <label for="provinceSelect">Provincia:</label>
-      <select id="provinceSelect">
-        <option value="puertoplata">Puerto Plata</option>
-        <option value="puntacana">Punta Cana</option>
-      </select>
     </div>
   </header>
 
-  <!-- AQUÍ VA EL MAPA -->
   <div id="map"></div>
 
   <footer>
-    <p>© 2025 PuntoRD — República Dominicana 🌴</p>
+    © 2025 PuntoRD — Guía Turística de Puerto Plata 🌊
   </footer>
 
-  <!-- Scripts de Leaflet -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // Crear mapa
-    const map = L.map('map').setView([19.78, -70.68], 12);
+    // Inicializar mapa centrado en Puerto Plata
+    const map = L.map("map").setView([19.79, -70.69], 12);
 
-    // Capa de mapa libre (OpenStreetMap)
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Agregar mapa base (OpenStreetMap)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors'
+      attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
 
-    // Cargar lugares desde JSON
-    async function cargarLugares(provincia) {
-      const respuesta = await fetch('lugares.json');
-      const lugares = await respuesta.json();
-
-      // Borrar marcadores anteriores
-      map.eachLayer(layer => {
-        if (layer instanceof L.Marker) map.removeLayer(layer);
-      });
-
-      // Filtrar lugares por provincia
-      const filtrados = lugares.filter(l => l.provincia === provincia);
-
-      // Agregar marcadores al mapa
-      filtrados.forEach(lugar => {
-        const marker = L.marker([lugar.lat, lugar.lon]).addTo(map);
-        marker.bindPopup(`<b>${lugar.nombre}</b><br>${lugar.descripcion}<br><a href="${lugar.ruta}" target="_blank">🧭 Cómo llegar</a>`);
-      });
-
-      // Centrar mapa según provincia
-      if (provincia === "puertoplata") map.setView([19.78, -70.68], 12);
-      if (provincia === "puntacana") map.setView([18.68, -68.4], 12);
-    }
-
-    // Cambiar provincia
-    document.getElementById('provinceSelect').addEventListener('change', e => {
-      cargarLugares(e.target.value);
-    });
-
-    // Cambiar idioma
-    const textos = {
-      es: "Descubre los mejores lugares de Puerto Plata y Punta Cana",
-      en: "Discover the best places in Puerto Plata and Punta Cana"
+    // Íconos personalizados por categoría
+    const iconos = {
+      playa: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png",
+        iconSize: [30, 30]
+      }),
+      hotel: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/139/139899.png",
+        iconSize: [28, 28]
+      }),
+      restaurante: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png",
+        iconSize: [28, 28]
+      }),
+      parque: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/149/149060.png",
+        iconSize: [28, 28]
+      }),
+      museo: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png",
+        iconSize: [28, 28]
+      }),
+      transporte: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448611.png",
+        iconSize: [28, 28]
+      }),
+      villa: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
+        iconSize: [30, 30]
+      }),
+      tienda: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/263/263142.png",
+        iconSize: [28, 28]
+      }),
+      default: L.icon({
+        iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
+        iconSize: [26, 26]
+      })
     };
 
-    document.getElementById('languageSelect').addEventListener('change', e => {
-      const lang = e.target.value;
-      document.getElementById('descripcion').textContent = textos[lang];
-    });
+    // Cargar lugares desde lugares.json
+    async function cargarLugares(idioma = "es") {
+      try {
+        const response = await fetch("lugares.json");
+        const data = await response.json();
 
-    // Cargar por defecto Puerto Plata
-    cargarLugares("puertoplata");
+        // Eliminar marcadores previos
+        map.eachLayer(layer => {
+          if (layer instanceof L.Marker) map.removeLayer(layer);
+        });
+
+        data.categoria.forEach(categoria => {
+          categoria.lugares.forEach(lugar => {
+            const icono = iconos[categoria.tipo.toLowerCase()] || iconos.default;
+            const marker = L.marker([lugar.lat, lugar.lng], { icon: icono }).addTo(map);
+            const texto =
+              idioma === "en" ? lugar.idiomas.en : lugar.idiomas.es;
+            marker.bindPopup(
+              `<b>${lugar.nombre}</b><br>${texto}<br><br><a href="https://www.google.com/maps/search/?api=1&query=${lugar.lat},${lugar.lng}" target="_blank">📍 Ver en Google Maps</a>`
+            );
+          });
+        });
+      } catch (error) {
+        console.error("Error al cargar lugares:", error);
+      }
+    }
+
+    // Cargar lugares por defecto
+    cargarLugares("es");
+
+    // Cambiar idioma
+    document.getElementById("languageSelect").addEventListener("change", e => {
+      const lang = e.target.value;
+      document.getElementById("descripcion").textContent =
+        lang === "en"
+          ? "Discover the best tourist places in Puerto Plata"
+          : "Descubre los mejores lugares turísticos de Puerto Plata";
+      cargarLugares(lang);
+    });
   </script>
 </body>
 </html>
