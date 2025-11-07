@@ -10,13 +10,16 @@
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css"
+  />
 
-  <!-- Estilos -->
   <style>
     body {
       margin: 0;
       font-family: "Poppins", sans-serif;
-      background-color: #f4fdfb;
+      background-color: #f3fcf8;
     }
 
     header {
@@ -28,15 +31,13 @@
 
     header h1 {
       margin: 0;
-      font-size: 24px;
-      letter-spacing: 1px;
+      font-size: 22px;
+      letter-spacing: 0.5px;
     }
 
     #map {
-      height: calc(100vh - 140px);
+      height: calc(100vh - 120px);
       width: 100%;
-      border-top: 3px solid #004d40;
-      border-bottom: 3px solid #004d40;
     }
 
     footer {
@@ -47,19 +48,26 @@
       padding: 10px;
     }
 
-    .controles {
-      margin-top: 8px;
-    }
-
     select {
-      margin: 5px;
+      margin: 6px;
       padding: 6px;
-      border-radius: 6px;
+      border-radius: 5px;
       border: none;
       font-size: 14px;
       background-color: #e0f2f1;
       color: #004d40;
       font-weight: bold;
+    }
+
+    #routeInfo {
+      background: rgba(255, 255, 255, 0.9);
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -67,37 +75,47 @@
 <body>
   <header>
     <h1>🌴 PuntoRD — Puerto Plata</h1>
-    <p id="descripcion">Descubre los mejores lugares turísticos de Puerto Plata</p>
-    <div class="controles">
-      <label for="languageSelect">Idioma:</label>
-      <select id="languageSelect">
-        <option value="es">Español 🇪🇸</option>
-        <option value="en">English 🇬🇧</option>
-      </select>
-    </div>
+    <p>Explora las mejores rutas y destinos turísticos de Puerto Plata</p>
+    <select id="languageSelect">
+      <option value="es">Español 🇪🇸</option>
+      <option value="en">English 🇬🇧</option>
+    </select>
   </header>
 
   <div id="map"></div>
+  <div id="routeInfo">Selecciona un lugar para ver la ruta 🚗</div>
 
-  <footer>
-    © 2025 PuntoRD — Guía Turística de Puerto Plata 🌊
-  </footer>
+  <footer>© 2025 PuntoRD — Guía Turística de Puerto Plata 🌊</footer>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
   <script>
-    // Inicializar mapa centrado en Puerto Plata
-    const map = L.map("map").setView([19.79, -70.69], 12);
+    // Inicializar mapa centrado solo en Puerto Plata
+    const map = L.map("map", {
+      zoomControl: true,
+      minZoom: 11,
+      maxZoom: 16
+    }).setView([19.79, -70.69], 12);
 
-    // Agregar mapa base (OpenStreetMap)
+    // Capa base
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 18,
-      attribution: "&copy; OpenStreetMap contributors"
+      attribution: "© OpenStreetMap contributors"
     }).addTo(map);
 
-    // Íconos personalizados por categoría
-    const iconos = {
+    // Limitar la vista del mapa a Puerto Plata
+    const bounds = L.latLngBounds(
+      [19.69, -70.85], // Suroeste
+      [19.89, -70.55]  // Noreste
+    );
+    map.setMaxBounds(bounds);
+    map.on("drag", function () {
+      map.panInsideBounds(bounds, { animate: false });
+    });
+
+    // Íconos
+    const icons = {
       playa: L.icon({
         iconUrl: "https://cdn-icons-png.flaticon.com/512/861/861060.png",
         iconSize: [30, 30]
@@ -118,44 +136,26 @@
         iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448827.png",
         iconSize: [28, 28]
       }),
-      transporte: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/3448/3448611.png",
-        iconSize: [28, 28]
-      }),
-      villa: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/235/235861.png",
-        iconSize: [30, 30]
-      }),
-      tienda: L.icon({
-        iconUrl: "https://cdn-icons-png.flaticon.com/512/263/263142.png",
-        iconSize: [28, 28]
-      }),
       default: L.icon({
         iconUrl: "https://cdn-icons-png.flaticon.com/512/854/854878.png",
         iconSize: [26, 26]
       })
     };
 
+    let routingControl;
+
     // Cargar lugares desde lugares.json
-    async function cargarLugares(idioma = "es") {
+    async function cargarLugares() {
       try {
         const response = await fetch("lugares.json");
         const data = await response.json();
 
-        // Eliminar marcadores previos
-        map.eachLayer(layer => {
-          if (layer instanceof L.Marker) map.removeLayer(layer);
-        });
-
-        data.categoria.forEach(categoria => {
-          categoria.lugares.forEach(lugar => {
-            const icono = iconos[categoria.tipo.toLowerCase()] || iconos.default;
-            const marker = L.marker([lugar.lat, lugar.lng], { icon: icono }).addTo(map);
-            const texto =
-              idioma === "en" ? lugar.idiomas.en : lugar.idiomas.es;
-            marker.bindPopup(
-              `<b>${lugar.nombre}</b><br>${texto}<br><br><a href="https://www.google.com/maps/search/?api=1&query=${lugar.lat},${lugar.lng}" target="_blank">📍 Ver en Google Maps</a>`
-            );
+        data.categoria.forEach((categoria) => {
+          categoria.lugares.forEach((lugar) => {
+            const icono = icons[categoria.tipo] || icons.default;
+            const marker = L.marker([lugar.lat, lugar.lng], { icon: icono })
+              .addTo(map)
+              .bindPopup(`<b>${lugar.nombre}</b><br>${lugar.idiomas.es}<br><button onclick="mostrarRuta(${lugar.lat}, ${lugar.lng})">📍 Ver ruta</button>`);
           });
         });
       } catch (error) {
@@ -163,18 +163,44 @@
       }
     }
 
-    // Cargar lugares por defecto
-    cargarLugares("es");
+    cargarLugares();
 
-    // Cambiar idioma
-    document.getElementById("languageSelect").addEventListener("change", e => {
-      const lang = e.target.value;
-      document.getElementById("descripcion").textContent =
-        lang === "en"
-          ? "Discover the best tourist places in Puerto Plata"
-          : "Descubre los mejores lugares turísticos de Puerto Plata";
-      cargarLugares(lang);
-    });
+    // Mostrar ruta desde ubicación actual
+    function mostrarRuta(lat, lng) {
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+
+      if (!navigator.geolocation) {
+        alert("La geolocalización no está disponible en tu navegador.");
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const userLat = pos.coords.latitude;
+          const userLng = pos.coords.longitude;
+
+          routingControl = L.Routing.control({
+            waypoints: [
+              L.latLng(userLat, userLng),
+              L.latLng(lat, lng)
+            ],
+            routeWhileDragging: false,
+            lineOptions: {
+              styles: [{ color: "#00796b", weight: 5 }]
+            },
+            createMarker: function() { return null; }
+          }).addTo(map);
+
+          document.getElementById("routeInfo").textContent =
+            "Calculando ruta... 🚗";
+        },
+        () => {
+          alert("No se pudo obtener tu ubicación.");
+        }
+      );
+    }
   </script>
 </body>
 </html>
