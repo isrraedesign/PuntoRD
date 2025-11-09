@@ -2,37 +2,57 @@
 <html lang="es">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Mapa Turístico de Puerto Plata</title>
 
-<!-- Librerías Leaflet -->
+<!-- Leaflet -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-html,body,#map { height:100%; margin:0; padding:0; }
-body { font-family: 'Segoe UI', Arial, sans-serif; background:#eef4fa; }
-#map { width:100%; height:100%; }
-.lang { position:absolute; top:10px; right:10px; z-index:1000; background:white; padding:8px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.2); }
-.sidebar { position:absolute; top:10px; left:10px; z-index:1000; background:white; padding:10px; width:270px; max-height:90%; overflow-y:auto; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
-button { background:#fff; border:1px solid #ccc; border-radius:6px; padding:5px 8px; cursor:pointer; }
-button:hover { background:#f0f0f0; }
-.place { padding:6px 0; border-bottom:1px solid #eee; }
+html, body, #map { height: 100%; margin: 0; padding: 0; }
+body { font-family: "Segoe UI", Arial, sans-serif; background: #f3f9ff; }
+#map { width: 100%; height: 100%; }
+
+.lang {
+  position: absolute; top: 10px; right: 10px;
+  background: white; padding: 8px;
+  border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+  z-index: 1000;
+}
+
+.sidebar {
+  position: absolute; top: 10px; left: 10px;
+  background: white; padding: 10px;
+  width: 270px; max-height: 90%;
+  overflow-y: auto; border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+button {
+  background: #fff; border: 1px solid #ccc;
+  border-radius: 6px; padding: 5px 8px;
+  cursor: pointer; margin-top: 3px;
+}
+button:hover { background: #f0f0f0; }
+.place { padding: 6px 0; border-bottom: 1px solid #eee; }
+.search { width: 95%; padding: 5px; margin-bottom: 6px; border-radius: 6px; border: 1px solid #ccc; }
 </style>
 </head>
 <body>
+
 <div id="map"></div>
 
-<!-- Selector de idioma -->
 <div class="lang">
   <button onclick="setLang('es')">🇪🇸</button>
   <button onclick="setLang('en')">🇬🇧</button>
   <button onclick="setLang('fr')">🇫🇷</button>
 </div>
 
-<!-- Lista lateral -->
 <div class="sidebar">
   <h3>Puerto Plata</h3>
+  <input class="search" id="searchBox" placeholder="Buscar lugar...">
   <div id="placesList"></div>
 </div>
 
@@ -44,75 +64,84 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap'
 }).addTo(map);
 
-// Función para cambiar idioma
+// Cambiar idioma
 function setLang(l){ LANG = l; renderList(); }
 
-// Lista de lugares (simplificada)
+// Lugares turísticos (ejemplo)
 const places = [
   {name:'Teleférico Isabel de Torres',lat:19.7829,lon:-70.7038,desc:{es:'Vista panorámica',en:'Panoramic view',fr:'Vue panoramique'}},
   {name:'Playa Dorada',lat:19.7753,lon:-70.6424,desc:{es:'Playa de arena dorada',en:'Golden sand beach',fr:'Plage de sable doré'}},
-  {name:'Fortaleza San Felipe',lat:19.8013,lon:-70.6909,desc:{es:'Fortaleza colonial',en:'Colonial fortress',fr:'Forteresse coloniale'}}
+  {name:'Fortaleza San Felipe',lat:19.8013,lon:-70.6909,desc:{es:'Fortaleza colonial',en:'Colonial fortress',fr:'Forteresse coloniale'}},
+  {name:'Museo del Ámbar',lat:19.7964,lon:-70.6922,desc:{es:'Museo dedicado al ámbar dominicano',en:'Amber museum',fr:'Musée de l\'ambre'}},
+  {name:'Parque Central',lat:19.795,-70.6939,desc:{es:'Centro histórico de la ciudad',en:'Historic city center',fr:'Centre historique de la ville'}},
+  {name:'Playa Cofresí',lat:19.8182,lon:-70.7431,desc:{es:'Playa y Ocean World',en:'Beach and Ocean World',fr:'Plage et Ocean World'}}
 ];
 
-const catColor = {default:'#0ea5e9'};
 function makeIcon(color){
   return L.divIcon({
-    html:`<div style="width:26px;height:26px;background:${color};border-radius:50%;border:2px solid white;"></div>`,
-    className:'', iconSize:[26,26]
+    html:`<div style="width:26px;height:26px;background:${color};
+    border-radius:50%;border:2px solid white;"></div>`,
+    className:'',iconSize:[26,26]
   });
 }
 
-let markers = [];
+const markers = [];
 places.forEach(p=>{
-  const marker = L.marker([p.lat, p.lon],{icon:makeIcon(catColor.default)}).addTo(map);
+  const marker=L.marker([p.lat,p.lon],{icon:makeIcon('#0ea5e9')}).addTo(map);
   marker.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}`);
   markers.push(marker);
 });
 
-// Lista lateral
+// Render lista lateral
 function renderList(){
-  const list = document.getElementById('placesList');
+  const list=document.getElementById('placesList');
   list.innerHTML='';
-  places.forEach(p=>{
-    const div = document.createElement('div');
+  const query=document.getElementById('searchBox').value.toLowerCase();
+  places.filter(p=>p.name.toLowerCase().includes(query)).forEach(p=>{
+    const div=document.createElement('div');
     div.className='place';
-    div.innerHTML = `<b>${p.name}</b><br>${p.desc[LANG]}<br>
-      <button onclick="flyTo(${p.lat},${p.lon})">${LANG==='es'?'Ver':'en'===LANG?'View':'Voir'}</button>
-      <button onclick="routeTo(${p.lat},${p.lon})">${LANG==='es'?'Cómo llegar':LANG==='en'?'Route':'Itinéraire'}</button>`;
+    div.innerHTML=`<b>${p.name}</b><br>${p.desc[LANG]}<br>
+    <button onclick="flyTo(${p.lat},${p.lon})">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>
+    <button onclick="routeTo(${p.lat},${p.lon})">${LANG==='es'?'Cómo llegar':LANG==='en'?'How to get':'Itinéraire'}</button>`;
     list.appendChild(div);
   });
 }
 renderList();
+document.getElementById('searchBox').addEventListener('input',renderList);
 
-// Centrar vista
 function flyTo(lat,lon){ map.flyTo([lat,lon],15); }
 
-// Marcador de usuario
-let userMarker=null, routeLine=null;
+// GPS en tiempo real
+let userMarker=null,routeLine=null;
 if(navigator.geolocation){
   navigator.geolocation.watchPosition(pos=>{
     const {latitude,longitude}=pos.coords;
     if(!userMarker){
-      userMarker=L.marker([latitude,longitude],{icon:makeIcon('green')}).addTo(map);
+      userMarker=L.marker([latitude,longitude],{icon:makeIcon('green')}).addTo(map)
+        .bindPopup(LANG==='es'?'Tu ubicación':'en'===LANG?'Your location':'Votre position').openPopup();
+      map.setView([latitude,longitude],13);
     } else {
       userMarker.setLatLng([latitude,longitude]);
     }
-  });
+  }, err=>console.warn('Sin acceso a ubicación'));
 }
 
-// Función de ruta (OSRM)
+// Rutas (auto, bici, caminando)
 async function routeTo(lat,lon){
   if(!userMarker){ alert('Ubicación no detectada'); return; }
   const u=userMarker.getLatLng();
-  const url=`https://router.project-osrm.org/route/v1/driving/${u.lng},${u.lat};${lon},${lat}?overview=full&geometries=geojson`;
-  const res=await fetch(url); const data=await res.json();
+  const profile = prompt("Selecciona modo: car (auto), foot (a pie), bike (bici)", "car");
+  const url=`https://router.project-osrm.org/route/v1/${profile}/${u.lng},${u.lat};${lon},${lat}?overview=full&geometries=geojson`;
+  const res=await fetch(url);
+  const data=await res.json();
+  if(!data.routes || !data.routes.length){ alert('Ruta no disponible'); return; }
   const coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
   const dist=(data.routes[0].distance/1000).toFixed(1);
   const time=(data.routes[0].duration/60).toFixed(0);
   if(routeLine){ map.removeLayer(routeLine); }
   routeLine=L.polyline(coords,{color:'#2563eb',weight:5}).addTo(map);
   map.fitBounds(routeLine.getBounds());
-  alert(`${LANG==='es'?'Distancia':'en'===LANG?'Distance':'Distance'}: ${dist} km | ${LANG==='es'?'Tiempo estimado':'en'===LANG?'Estimated time':'Temps estimé'}: ${time} min`);
+  alert(`${LANG==='es'?'Distancia':'en'===LANG?'Distance':'Distance'}: ${dist} km\n${LANG==='es'?'Tiempo estimado':'en'===LANG?'Estimated time':'Temps estimé'}: ${time} min`);
 }
 </script>
 </body>
