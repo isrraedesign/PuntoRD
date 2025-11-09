@@ -1,220 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa Puerto Plata ‑ Cómo llegar</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Turismo Puerto Plata</title>
   <style>
-    html, body { height:100%; margin:0; padding:0; font-family:Arial, sans-serif; }
-    #map { height:100%; width:100%; }
-    .panel { position:absolute; top:10px; left:10px; width:350px; max-height:90%; overflow:auto; background:white; padding:12px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1000; }
-    .panel h3 { margin-top:0; }
-    .search { width:95%; padding:6px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc; }
-    .place { padding:6px; border-bottom:1px solid #eee; }
-    button { padding:5px 8px; border-radius:6px; border:none; cursor:pointer; margin-top:4px; background:#0284c7; color:white; }
-    button:hover { background:#0369a1; }
-    .langbox { position:absolute; top:10px; right:10px; background:white; padding:8px; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; }
-    .chip { display:inline-block; padding:5px 10px; border-radius:20px; background:#e2e8f0; color:#1e293b; margin:4px; cursor:pointer; }
-    .chip.active { background:#0284c7; color:white; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 10px; }
+    #map { height: 500px; width: 100%; margin-top: 10px; }
+    .language-select { margin-bottom: 10px; }
+    .info-box { background: #eee; padding: 8px; border-radius: 5px; margin-top: 10px; }
   </style>
 </head>
 <body>
 
+  <h1 id="title">Turismo Puerto Plata</h1>
+
+  <div class="language-select">
+    <label for="lang">Idioma:</label>
+    <select id="lang">
+      <option value="es">Español</option>
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+    </select>
+  </div>
+
   <div id="map"></div>
 
-  <div class="panel">
-    <h3>Puerto Plata</h3>
-    <input class="search" id="searchBox" placeholder="Buscar lugar...">
-    <div id="filters">
-      <span class="chip active" data-cat="all">Todos</span>
-      <span class="chip" data-cat="street">Calles</span>
-      <span class="chip" data-cat="restaurant">Restaurantes</span>
-      <span.class="chip" data-cat="hotel">Hoteles / Villas</span>
-      <span class="chip" data-cat="beach">Playas</span>
-      <span class="chip" data-cat="port">Puertos</span>
-      <span class="chip" data-cat="danger">Precaución</span>
-    </div>
-    <div id="placesList"></div>
-  </div>
-
-  <div class="langbox">
-    <button onclick="setLang('es')">🇪🇸</button>
-    <button onclick="setLang('en')">🇬🇧</button>
-    <button.onclick="setLang('fr')">🇫🇷</button>
-  </div>
+  <div class="info-box" id="info">Cargando lugares turísticos...</div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', ()=>{
-
-      let LANG = 'es';
-      const map = L.map('map').setView([19.7934, -70.6884], 13);
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19, attribution:'© OpenStreetMap' }).addTo(map);
-
-      const ICONS = {
-        street:'#64748b', restaurant:'#ef4444', hotel:'#06b6d4', beach:'#0284c7',
-        port:'#f97316', danger:'#ef4444', default:'#64748b'
-      };
-
-      let userMarker = null, userLoc = null, routeLine = null;
-
-      const places = [
-        {name:'Calle Duarte', lat:19.8020, lon:-70.6880, category:'street', desc:{es:'Calle principal', en:'Main street', fr:'Rue principale'}},
-        {name:'Calle Beller', lat:19.8000, lon:-70.6890, category:'street', desc:{es:'Calle céntrica', en:'Central street', fr:'Rue centrale'}},
-        {name:'Calle Las Sombrillas', lat:19.8030, lon:-70.6900, category:'street', desc:{es:'Zona turística', en:'Tourist area', fr:'Zone touristique'}},
-        {name:'Av. Gregorio Luperón', lat:19.8050, lon:-70.6920, category:'street', desc:{es:'Avenida principal', en:'Main avenue', fr:'Avenue principale'}},
-        {name:'La Casita Azul', lat:19.7760, lon:-70.6420, category:'restaurant', desc:{es:'Restaurante típico', en:'Typical restaurant', fr:'Restaurant typique'}},
-        {name:'Sambalú', lat:19.7770, lon:-70.6430, category:'restaurant', desc:{es:'Comida internacional', en:'International food', fr:'Cuisine internationale'}},
-        {name:'Iberostar Waves Costa Dorada', lat:19.7740, lon:-70.6421, category:'hotel', desc:{es:'Hotel all inclusive', en:'All‑inclusive hotel', fr:'Hôtel tout compris'}},
-        {name:'BlueBay Villas Doradas', lat:19.7750, lon:-70.6430, category:'hotel', desc:{es:'Adults only resort', en:'Adults only resort', fr:'Resort pour adultes'}},
-        {name:'Playa Dorada', lat:19.7740, lon:-70.6421, category:'beach', desc:{es:'Playa de arena dorada', en:'Golden sand beach', fr:'Plage de sable doré'}},
-        {name:'Playa Sosúa', lat:19.7240, lon:-70.5080, category:'beach', desc:{es:'Playa turística', en:'Tourist beach', fr:'Plage touristique'}},
-        {name:'Puerto de Amber Cove', lat:19.8050, lon:-70.7440, category:'port', desc:{es:'Puerto de cruceros', en:'Cruise port', fr:'Port de croisière'}},
-        {name:'Calle Isabel de Torres', lat:19.7830, lon:-70.7040, category:'street', desc:{es:'Calle turística', en:'Tourist street', fr:'Rue touristique const places = [
-{name:'Calle Duarte',lat:19.8020,lon:-70.6880,category:'street',desc:{es:'Calle principal',en:'Main street',fr:'Rue principale'}},
-{name:'Calle Beller',lat:19.8000,lon:-70.6890,category:'street',desc:{es:'Calle céntrica',en:'Central street',fr:'Rue centrale'}},
-{name:'Calle Las Sombrillas',lat:19.8030,lon:-70.6900,category:'street',desc:{es:'Zona turística',en:'Tourist area',fr:'Zone touristique'}},
-{name:'Av. Gregorio Luperón',lat:19.8050,lon:-70.6920,category:'street',desc:{es:'Avenida principal',en:'Main avenue',fr:'Avenue principale'}},
-{name:'Av. Caamaño Deñó',lat:19.8060,lon:-70.6930,category:'street',desc:{es:'Avenida importante',en:'Important avenue',fr:'Avenue importante'}},
-{name:'Av. Manolo Tavárez Justo',lat:19.8070,lon:-70.6940,category:'street',desc:{es:'Avenida céntrica',en:'Central avenue',fr:'Avenue centrale'}},
-{name:'Calle José del Carmen Ariza',lat:19.8080,lon:-70.6950,category:'street',desc:{es:'Calle turística',en:'Tourist street',fr:'Rue touristique'}},
-{name:'Calle Pedro Clisante',lat:19.8090,lon:-70.6960,category:'street',desc:{es:'Zona comercial',en:'Commercial area',fr:'Zone commerciale'}},
-{name:'Calle Libertad',lat:19.8100,lon:-70.6970,category:'street',desc:{es:'Calle residencial',en:'Residential street',fr:'Rue résidentielle'}},
-{name:'Callejón de la Marina',lat:19.8110,lon:-70.6980,category:'street',desc:{es:'Callejón turístico',en:'Tourist alley',fr:'Allée touristique'}},
-{name:'La Casita Azul',lat:19.7760,lon:-70.6420,category:'restaurant',desc:{es:'Restaurante típico',en:'Typical restaurant',fr:'Restaurant typique'}},
-{name:'Sambalú',lat:19.7770,lon:-70.6430,category:'restaurant',desc:{es:'Comida internacional',en:'International food',fr:'Cuisine internationale'}},
-{name:'El Patio de Frida',lat:19.7780,lon:-70.6440,category:'restaurant',desc:{es:'Restaurante mexicano',en:'Mexican restaurant',fr:'Restaurant mexicain'}},
-{name:'Bellini',lat:19.7790,lon:-70.6450,category:'restaurant',desc:{es:'Pizzería',en:'Pizzeria',fr:'Pizzeria'}},
-{name:'Rodizio',lat:19.7800,lon:-70.6460,category:'restaurant',desc:{es:'Restaurante brasileño',en:'Brazilian restaurant',fr:'Restaurant brésilien'}},
-{name:'Moomtaz Thai Food',lat:19.7810,lon:-70.6470,category:'restaurant',desc:{es:'Restaurante tailandés',en:'Thai restaurant',fr:'Restaurant thaïlandais'}},
-{name:'The Blue Lagoon Caribbean Grill',lat:19.7820,lon:-70.6480,category:'restaurant',desc:{es:'Restaurante caribeño',en:'Caribbean restaurant',fr:'Restaurant caribéen'}},
-{name:'Trapiche Paradise',lat:19.7830,lon:-70.6490,category:'restaurant',desc:{es:'Cocina local',en:'Local cuisine',fr:'Cuisine locale'}},
-{name:'Jazz New Orleans Inspired',lat:19.7840,lon:-70.6500,category:'restaurant',desc:{es:'Jazz y comida',en:'Jazz and food',fr:'Jazz et nourriture'}},
-{name:'Iberostar Waves Costa Dorada',lat:19.7740,lon:-70.6421,category:'hotel',desc:{es:'Hotel all inclusive',en:'All-inclusive hotel',fr:'Hôtel tout compris'}},
-{name:'BlueBay Villas Doradas',lat:19.7750,lon:-70.6430,category:'hotel',desc:{es:'Adults only resort',en:'Adults only resort',fr:'Resort pour adultes'}},
-{name:'Casa Colonial Beach & Spa',lat:19.7765,lon:-70.6440,category:'hotel',desc:{es:'Hotel boutique',en:'Boutique hotel',fr:'Hôtel boutique'}},
-{name:'Emotions by Hodelpa',lat:19.7775,lon:-70.6450,category:'hotel',desc:{es:'All inclusive',en:'All inclusive',fr:'Tout compris'}},
-{name:'Senator Puerto Plata Resort',lat:19.7785,lon:-70.6460,category:'hotel',desc:{es:'Hotel familiar',en:'Family hotel',fr:'Hôtel familial'}},
-{name:'Lifestyle Resort and Villas',lat:19.7795,lon:-70.6470,category:'hotel',desc:{es:'Resort y villas',en:'Resort and villas',fr:'Resort et villas'}},
-{name:'Villa Yudith',lat:19.7805,lon:-70.6480,category:'hotel',desc:{es:'Villa privada',en:'Private villa',fr:'Villa privée'}},
-{name:'Punta Rucia Lodge',lat:19.7815,lon:-70.6490,category:'hotel',desc:{es:'Hotel boutique',en:'Boutique hotel',fr:'Hôtel boutique'}},
-{name:'Casa Valeria Boutique Hotel',lat:19.7825,lon:-70.6500,category:'hotel',desc:{es:'Hotel boutique',en:'Boutique hotel',fr:'Hôtel boutique'}},
-{name:'New Garden Hotel',lat:19.7835,lon:-70.6510,category:'hotel',desc:{es:'Hotel económico',en:'Economy hotel',fr:'Hôtel économique'}},
-{name:'Playa Dorada',lat:19.7740,lon:-70.6421,category:'beach',desc:{es:'Playa de arena dorada',en:'Golden sand beach',fr:'Plage de sable doré'}},
-{name:'Playa Sosúa',lat:19.7240,lon:-70.5080,category:'beach',desc:{es:'Playa turística',en:'Tourist beach',fr:'Plage touristique'}},
-{name:'Playa Cabarete',lat:19.7540,lon:-70.3980,category:'beach',desc:{es:'Playa para surf',en:'Surf beach',fr:'Plage de surf'}},
-{name:'Playa Cofresí',lat:19.7860,lon:-70.6080,category:'beach',desc:{es:'Playa local',en:'Local beach',fr:'Plage locale'}},
-{name:'Playa La Entrada',lat:19.7980,lon:-70.6300,category:'beach',desc:{es:'Zona tranquila',en:'Quiet area',fr:'Zone tranquille'}},
-{name:'Playa Maimón',lat:19.8010,lon:-70.6550,category:'beach',desc:{es:'Playa privada',en:'Private beach',fr:'Plage privée'}},
-{name:'Playa Long Beach',lat:19.8025,lon:-70.6700,category:'beach',desc:{es:'Playa extensa',en:'Long beach',fr:'Plage longue'}},
-{name:'Playa Laguna',lat:19.8040,lon:-70.6800,category:'beach',desc:{es:'Laguna de arena',en:'Sand lagoon',fr:'Lagune de sable'}},
-{name:'Playa Grande Calle Sánchez',lat:19.8050,lon:-70.6900,category:'beach',desc:{es:'Playa popular',en:'Popular beach',fr:'Plage populaire'}},
-{name:'Puerto de Amber Cove',lat:19.8050,lon:-70.7440,category:'port',desc:{es:'Puerto de cruceros',en:'Cruise port',fr:'Port de croisière'}}
-{name:'Zona Baja (Precaución)',lat:19.8000,lon:-70.7000,category:'danger',desc:{es:'Zona con alta delincuencia, tomar precaución',en:'High-crime area, take caution',fr:'Zone à haute criminalité, prudence'}},
-{name:'Sector Los Rieles',lat:19.8025,lon:-70.7050,category:'danger',desc:{es:'Evitar de noche',en:'Avoid at night',fr:'À éviter la nuit'}},
-{name:'Barrio La Union',lat:19.8040,lon:-70.7100,category:'danger',desc:{es:'Zona conflictiva',en:'Conflictive area',fr:'Zone conflictuelle'}},
-{name:'Calle Isabel de Torres',lat:19.7830,lon:-70.7040,category:'street',desc:{es:'Calle turística',en:'Tourist street',fr:'Rue touristique'}}
-];
-  '}},
-        // Aquí puedes añadir el resto de los lugares que tienes…
-      ];
-
-      const markers = L.markerClusterGroup();
-
-      async function showRoute(lat, lon, name){
-        if(!userLoc){ alert(LANG==='es'?'No se detecta ubicación':'Location not detected'); return; }
-        const url = `https://router.project-osrm.org/route/v1/driving/${userLoc[1]},${userLoc[0]};${lon},${lat}?overview=full&geometries=geojson`;
-        const res = await fetch(url);
-        const data = await res.json();
-        if(routeLine) map.removeLayer(routeLine);
-        const coords = data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-        routeLine = L.polyline(coords,{color:'#2563eb', weight:5}).addTo(map);
-        map.fitBounds(routeLine.getBounds());
-        const mins = Math.round(data.routes[0].duration / 60);
-        const km = (data.routes[0].distance / 1000).toFixed(1);
-        alert(`${LANG==='es'?'Destino':'Destination'}: ${name}\n${LANG==='es'?'Distancia':'Distance'}: ${km} km\n${LANG==='es'?'Tiempo estimado':'Estimated time'}: ${mins} min`);
+    // Traducciones básico
+    const translations = {
+      es: {
+        title: "Turismo Puerto Plata",
+        dangerZone: "Zona Peligrosa",
+        touristSpot: "Lugar Turístico",
+        loading: "Cargando lugares turísticos...",
+      },
+      en: {
+        title: "Puerto Plata Tourism",
+        dangerZone: "Danger Zone",
+        touristSpot: "Tourist Spot",
+        loading: "Loading tourist spots...",
+      },
+      fr: {
+        title: "Tourisme à Puerto Plata",
+        dangerZone: "Zone Dangereuse",
+        touristSpot: "Lieu touristique",
+        loading: "Chargement des lieux touristiques...",
       }
+    };
 
-      places.forEach(p=>{
-        const color = ICONS[p.category] || ICONS.default;
-        const marker = L.marker([p.lat, p.lon], { icon: L.divIcon({
-            html:`<div style="width:16px;height:16px;background:${color};border-radius:50%;border:2px solid white;"></div>`,
-            className:'', iconSize:[16,16]
-        })});
+    // Datos de lugares (puedes ampliar)
+    const touristPlaces = [
+      {lat: 19.779, lng: -70.690, name: {es:"Cayo Arena",en:"Cayo Arena",fr:"Cayo Arena"}, type:"beach"},
+      {lat: 19.797, lng: -70.690, name: {es:"Fuerte San Felipe",en:"San Felipe Fort",fr:"Fort San Felipe"}, type:"historic"},
+      {lat: 19.815, lng: -70.700, name: {es:"Zona Colonial",en:"Colonial Zone",fr:"Zone coloniale"}, type:"historic"},
+      {lat: 19.783, lng: -70.715, name: {es:"Playa Dorada",en:"Golden Beach",fr:"Plage Dorée"}, type:"beach"},
+      {lat: 19.790, lng: -70.710, name: {es:"Villas Playa Grande",en:"Playa Grande Villas",fr:"Villas Playa Grande"}, type:"villa"},
+    ];
 
-        marker.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}<br><button class="routeBtn">${LANG==='es'?'Cómo llegar':'Directions'}</button>`);
+    // Lugares peligrosos
+    let dangerZones = [
+      {lat: 19.780, lng: -70.700, name: {es:"Zona Peligrosa 1",en:"Danger Zone 1",fr:"Zone Dangereuse 1"}},
+      {lat: 19.770, lng: -70.680, name: {es:"Zona Peligrosa 2",en:"Danger Zone 2",fr:"Zone Dangereuse 2"}},
+    ];
 
-        marker.on('popupopen', function(){
-          const btn = document.querySelector('.leaflet-popup-content button.routeBtn');
-          if(btn) btn.onclick = ()=>showRoute(p.lat, p.lon, p.name);
-        });
+    let map, markers = [], dangerMarkers = [];
+    let currentLang = "es";
 
-        markers.addLayer(marker);
-        p.marker = marker;
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: {lat: 19.8, lng: -70.7},
+        zoom: 13
       });
 
-      map.addLayer(markers);
+      loadMarkers();
+    }
 
-      const list = document.getElementById('placesList');
-      function renderList(){
-        list.innerHTML = '';
-        const query = document.getElementById('searchBox').value.toLowerCase();
-        const filter = document.querySelector('#filters .chip.active')?.dataset.cat || 'all';
-        places.filter(p=>{
-          if(filter !== 'all' && p.category !== filter) return false;
-          if(query && !p.name.toLowerCase().includes(query) && !p.desc[LANG].toLowerCase().includes(query)) return false;
-          return true;
-        }).forEach(p=>{
-          const div = document.createElement('div');
-          div.className = 'place';
-          div.innerHTML = `<b>${p.name}</b><br>${p.desc[LANG]}<br>
-            <button onclick="map.flyTo([${p.lat},${p.lon}],16)">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>
-            <button onclick="showRoute(${p.lat},${p.lon},'${p.name}')">${LANG==='es'?'Cómo llegar':'Directions'}</button>`;
-          list.appendChild(div);
+    function loadMarkers() {
+      clearMarkers();
+
+      // Colocar marcadores turísticos
+      touristPlaces.forEach(place => {
+        const marker = new google.maps.Marker({
+          position: {lat: place.lat, lng: place.lng},
+          map,
+          title: place.name[currentLang],
+          icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
         });
-      }
+        markers.push(marker);
 
-      renderList();
-      document.getElementById('searchBox').addEventListener('input', renderList);
-
-      document.querySelectorAll('#filters .chip').forEach(c=>{
-        c.addEventListener('click', ()=>{
-          document.querySelectorAll('#filters .chip').forEach(x=>x.classList.remove('active'));
-          c.classList.add('active');
-          renderList();
+        const infowindow = new google.maps.InfoWindow({
+          content: `<strong>${place.name[currentLang]}</strong><br>${translations[currentLang].touristSpot}`
         });
+        marker.addListener('click', () => infowindow.open(map, marker));
       });
 
-      function setLang(l){
-        LANG = l;
-        markers.eachLayer(m=>{
-          const p = places.find(x => x.marker === m);
-          if(p) m.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}<br><button class="routeBtn">${LANG==='es'?'Cómo llegar':'Directions'}</button>`);
+      // Colocar zonas peligrosas
+      dangerZones.forEach(zone => {
+        const dmarker = new google.maps.Marker({
+          position: {lat: zone.lat, lng: zone.lng},
+          map,
+          title: zone.name[currentLang],
+          icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
         });
-        renderList();
-      }
+        dangerMarkers.push(dmarker);
 
-      if(navigator.geolocation){
-        navigator.geolocation.watchPosition(pos=>{
-          userLoc = [pos.coords.latitude, pos.coords.longitude];
-          if(!userMarker){
-            userMarker = L.marker(userLoc, { icon: L.divIcon({
-              html:`<div style="width:12px;height:12px;background:green;border-radius:50%"></div>`,
-              className:'', iconSize:[12,12]
-            })}).addTo(map);
-            map.setView(userLoc, 13);
-          } else userMarker.setLatLng(userLoc);
+        const infowindow = new google.maps.InfoWindow({
+          content: `<strong>${zone.name[currentLang]}</strong><br>${translations[currentLang].dangerZone}`
         });
-      }
+        dmarker.addListener('click', () => infowindow.open(map, dmarker));
+      });
 
-    }); // end DOMContentLoaded
+      document.getElementById("info").textContent = translations[currentLang].loading;
+    }
+
+    function clearMarkers() {
+      markers.forEach(marker => marker.setMap(null));
+      markers = [];
+      dangerMarkers.forEach(marker => marker.setMap(null));
+      dangerMarkers = [];
+    }
+
+    // Cambiar idioma y recargar marcadores
+    document.getElementById("lang").addEventListener('change', (ev) => {
+      currentLang = ev.target.value;
+      document.getElementById("title").textContent = translations[currentLang].title;
+      document.getElementById("info").textContent = translations[currentLang].loading;
+      loadMarkers();
+    });
+
+    // Simulación tiempo real: alternar peligros de forma periódica
+    setInterval(() => {
+      // Alternar visibilidad de la segunda zona peligrosa para mostrar efecto tiempo real
+      if (dangerMarkers[1]) {
+        const m = dangerMarkers[1];
+        m.getMap() ? m.setMap(null) : m.setMap(map);
+      }
+    }, 8000);
+
   </script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=TU_API_KEY&callback=initMap"></script>
 </body>
 </html>
