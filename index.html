@@ -1,123 +1,146 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Mapa Turístico de Puerto Plata</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css">
-<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 <style>
-  body,html {margin:0;padding:0;height:100%;}
-  #map {height:100vh;width:100%;}
-  .leaflet-popup-content {font-size:0.9rem;}
-  .cat-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:0.7rem;color:#fff}
-  .cat-beach{background:#1E90FF}.cat-hotel{background:#00B894}.cat-restaurant{background:#FF7675}
-  .cat-park{background:#27AE60}.cat-attraction{background:#FDCB6E}.cat-danger{background:#E74C3C}
+html,body,#map{height:100%;margin:0;}
+body{font-family:Inter,Segoe UI,Arial;background:#f8fafc;color:#334155;}
+#map{z-index:1;}
+.lang{position:absolute;top:10px;right:10px;background:white;padding:8px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:1000;}
+button{cursor:pointer;margin:2px;padding:4px 8px;border-radius:8px;border:1px solid #ccc;background:white;}
+.sidebar{position:absolute;top:10px;left:10px;width:260px;max-height:90%;overflow:auto;background:white;border-radius:14px;padding:10px;box-shadow:0 10px 20px rgba(0,0,0,0.1);z-index:1000;}
+.place{padding:4px 0;border-bottom:1px solid #e2e8f0;}
 </style>
 </head>
-<body class="bg-blue-50">
-<div class="flex flex-col md:flex-row h-screen">
-  <div class="w-full md:w-1/4 bg-white p-4 overflow-y-auto shadow-lg z-10">
-    <h1 class="text-2xl font-bold mb-2 text-blue-700">Mapa Turístico de Puerto Plata</h1>
-    <p class="text-sm mb-2 text-gray-600">
-      🇪🇸 Explora lugares, playas, hoteles y rutas<br>
-      🇬🇧 Explore places, beaches, hotels and routes<br>
-      🇫🇷 Découvrez les lieux, plages, hôtels et itinéraires
-    </p>
-    <input id="search" type="text" placeholder="Buscar / Search / Rechercher..." 
-           class="w-full border rounded-lg p-2 mb-4">
-    <div id="placesList" class="space-y-2"></div>
-  </div>
-  <div id="map" class="flex-1"></div>
+
+<body>
+<div id="map"></div>
+
+<!-- Selector de idioma -->
+<div class="lang">
+  <button onclick="setLang('es')">🇪🇸</button>
+  <button onclick="setLang('en')">🇬🇧</button>
+  <button onclick="setLang('fr')">🇫🇷</button>
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-<script>
-const map=L.map('map').setView([19.7934,-70.6884],13);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-  maxZoom:19,
-  attribution:'&copy; OpenStreetMap'
-}).addTo(map);
+<!-- Lista lateral -->
+<div class="sidebar" id="sidebar">
+  <h3>Puerto Plata</h3>
+  <div id="placesList"></div>
+</div>
 
-// --- Aquí está la lista de lugares (truncada, en la versión final irán los 300) ---
+<script>
+// Idioma actual
+let LANG='es';
+
+// Crear mapa centrado en Puerto Plata
+const map=L.map('map').setView([19.79,-70.69],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  {maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+
+// Cambiar idioma
+function setLang(l){LANG=l;renderList();}
+
+// ======= Lista de lugares =======
 const places=[
-  {name:"Teleférico Isabel de Torres",coords:[19.7829,-70.7038],cat:"attraction",
-   desc:{es:"Teleférico al monte Isabel de Torres",en:"Cable car to Mount Isabel de Torres",fr:"Téléphérique vers le mont Isabel de Torres"}},
-  {name:"Fortaleza San Felipe",coords:[19.801283,-70.690886],cat:"attraction",
-   desc:{es:"Fuerte histórico del siglo XVI",en:"16th century fortress",fr:"Forteresse du XVIᵉ siècle"}},
-  {name:"Playa Dorada",coords:[19.7753,-70.6424],cat:"beach",
-   desc:{es:"Playa popular con hoteles",en:"Popular beach with hotels",fr:"Plage populaire avec hôtels"}},
-  {name:"Museo del Ámbar",coords:[19.7964,-70.6922],cat:"attraction",
-   desc:{es:"Museo dedicado al ámbar dominicano",en:"Museum of Dominican amber",fr:"Musée de l’ambre dominicain"}},
-  {name:"Parque Central",coords:[19.795,-70.6939],cat:"park",
-   desc:{es:"Plaza principal de la ciudad",en:"Main city square",fr:"Place principale de la ville"}},
-  {name:"Zona de precaución (barrio bajo)",coords:[19.7950,-70.6990],cat:"danger",
-   desc:{es:"Evite caminar solo tarde",en:"Avoid walking alone late",fr:"Évitez de marcher seul tard"}}
+  {id:'1',name:'Teleférico Isabel de Torres',lat:19.7829,lon:-70.7038,cat:'attraction',desc:{es:'Vista panorámica',en:'Panoramic view',fr:'Vue panoramique'}},
+  {id:'2',name:'Playa Dorada',lat:19.7753,lon:-70.6424,cat:'beach',desc:{es:'Famosa playa de arena dorada',en:'Famous golden beach',fr:'Plage dorée célèbre'}},
+  {id:'3',name:'Fortaleza San Felipe',lat:19.801283,lon:-70.690886,cat:'historic',desc:{es:'Fortaleza colonial',en:'Colonial fortress',fr:'Forteresse coloniale'}},
+  {id:'4',name:'Museo del Ámbar',lat:19.7964,lon:-70.6922,cat:'museum',desc:{es:'Museo dedicado al ámbar dominicano',en:'Amber museum',fr:'Musée de l\'ambre'}},
+  {id:'5',name:'Parque Central',lat:19.795,-70.6939,cat:'park',desc:{es:'Centro de la ciudad',en:'City center',fr:'Centre-ville'}},
+  {id:'6',name:'Zona de Precaución: Callejón La Loma',lat:19.792,-70.700,cat:'danger',desc:{es:'Zona con alto riesgo de robos nocturnos',en:'Area with higher night risk',fr:'Zone à risque la nuit'}}
 ];
 
-// --- Iconos básicos ---
-const icons={
-  beach:"🏖️",hotel:"🏨",restaurant:"🍽️",park:"🌳",attraction:"🎡",danger:"⚠️"
+// Crear lugares aleatorios (simulados hasta tener 300)
+for(let i=7;i<=300;i++){
+  let lat=19.79+(Math.random()-0.5)*0.1;
+  let lon=-70.69+(Math.random()-0.5)*0.1;
+  places.push({
+    id:String(i),
+    name:'Lugar '+i,
+    lat,lon,
+    cat:['hotel','restaurant','shop','beach','park'][i%5],
+    desc:{es:'Lugar turístico',en:'Touristic place',fr:'Lieu touristique'}
+  });
+}
+
+// Colores por categoría
+function makeIcon(color){
+  return L.divIcon({
+    html:`<div style="width:28px;height:28px;background:${color};
+           border-radius:50%;border:2px solid white;"></div>`,
+    iconSize:[28,28],className:''
+  });
+}
+const catColor={
+  beach:'#0284c7', hotel:'#06b6d4', restaurant:'#ef4444', museum:'#7c3aed',
+  park:'#10b981', historic:'#f97316', danger:'#f43f5e', shop:'#f59e0b', attraction:'#fbbf24'
 };
 
-// --- Mostrar marcadores ---
-const cluster=L.markerClusterGroup();
+// Marcadores
+const markers=L.markerClusterGroup();
 places.forEach(p=>{
-  const marker=L.marker(p.coords).bindPopup(`
-    <b>${p.name}</b><br>
-    <span class="cat-badge cat-${p.cat}">${p.cat}</span><br><br>
-    🇪🇸 ${p.desc.es}<br>🇬🇧 ${p.desc.en}<br>🇫🇷 ${p.desc.fr}<br>
-    <button onclick="routeTo(${p.coords[0]},${p.coords[1]})"
-      class='mt-2 px-2 py-1 bg-blue-600 text-white rounded text-xs'>Cómo llegar / Get there / Itinéraire</button>
-  `);
-  cluster.addLayer(marker);
+  const icon=makeIcon(catColor[p.cat]||'#64748b');
+  const m=L.marker([p.lat,p.lon],{icon});
+  m.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]||''}<br><small>${p.cat}</small>`);
+  markers.addLayer(m);
 });
-map.addLayer(cluster);
+map.addLayer(markers);
 
-// --- Lista lateral ---
-const list=document.getElementById('placesList');
-function renderList(f=""){
-  list.innerHTML="";
-  places.filter(p=>p.name.toLowerCase().includes(f.toLowerCase())).forEach(p=>{
+// Lista lateral
+function renderList(){
+  const list=document.getElementById('placesList');
+  list.innerHTML='';
+  places.forEach(p=>{
     const div=document.createElement('div');
-    div.className="p-2 border rounded hover:bg-blue-50 cursor-pointer";
-    div.innerHTML=`${icons[p.cat]||"📍"} <b>${p.name}</b>`;
-    div.onclick=()=>map.setView(p.coords,16);
+    div.className='place';
+    div.innerHTML=`<b>${p.name}</b><br>${p.desc[LANG]||''}<br>
+      <button onclick="flyTo(${p.lat},${p.lon})">
+        ${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}
+      </button>
+      <button onclick="routeTo(${p.lat},${p.lon})">
+        ${LANG==='es'?'Ruta':LANG==='en'?'Route':'Itinéraire'}
+      </button>`;
     list.appendChild(div);
   });
 }
 renderList();
-document.getElementById('search').addEventListener('input',e=>renderList(e.target.value));
 
-// --- Rutas con OSRM ---
-let routeLayer;
-function routeTo(lat,lon){
-  if(routeLayer)map.removeLayer(routeLayer);
-  if(navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(pos=>{
-      const {latitude,longitude}=pos.coords;
-      fetch(`https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${lon},${lat}?overview=full&geometries=geojson`)
-        .then(r=>r.json()).then(data=>{
-          const coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-          routeLayer=L.polyline(coords,{color:'blue',weight:4}).addTo(map);
-          map.fitBounds(routeLayer.getBounds());
-          alert("⏱ Duración estimada ≈ "+(data.routes[0].duration/60).toFixed(1)+" min");
-        });
-    });
-  }else alert("No se pudo obtener ubicación actual.");
-}
+// Función para centrar mapa
+function flyTo(lat,lon){map.flyTo([lat,lon],15);}
 
-// --- Marcador en tiempo real ---
-let userMarker;
+// Posición del usuario
+let userMarker=null,routeLine=null;
 if(navigator.geolocation){
   navigator.geolocation.watchPosition(pos=>{
     const {latitude,longitude}=pos.coords;
     if(!userMarker){
-      userMarker=L.marker([latitude,longitude],{title:"Tu ubicación / Your location / Votre position"}).addTo(map);
-    }else userMarker.setLatLng([latitude,longitude]);
+      userMarker=L.marker([latitude,longitude],{icon:makeIcon('#0ea5e9')}).addTo(map);
+    } else {
+      userMarker.setLatLng([latitude,longitude]);
+    }
+  },()=>{}, {enableHighAccuracy:true});
+}
+
+// Ruta en tiempo real
+function routeTo(lat,lon){
+  if(!userMarker){alert('Ubicación no detectada');return;}
+  const u=userMarker.getLatLng();
+  fetch(`https://router.project-osrm.org/route/v1/driving/${u.lng},${u.lat};${lon},${lat}?overview=full&geometries=geojson`)
+  .then(r=>r.json())
+  .then(j=>{
+    const coords=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+    if(routeLine){map.removeLayer(routeLine);}
+    routeLine=L.polyline(coords,{color:'#0ea5e9',weight:5}).addTo(map);
+    map.fitBounds(routeLine.getBounds());
   });
 }
 </script>
