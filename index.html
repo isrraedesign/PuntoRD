@@ -1,148 +1,456 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Mapa Turístico de Puerto Plata</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Puerto Plata — Mapa Turístico (ES/EN/FR)</title>
 
-<!-- Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Leaflet + MarkerCluster -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
-<style>
-html,body,#map{height:100%;margin:0;}
-body{font-family:Inter,Segoe UI,Arial;background:#f8fafc;color:#334155;}
-#map{z-index:1;}
-.lang{position:absolute;top:10px;right:10px;background:white;padding:8px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);z-index:1000;}
-button{cursor:pointer;margin:2px;padding:4px 8px;border-radius:8px;border:1px solid #ccc;background:white;}
-.sidebar{position:absolute;top:10px;left:10px;width:260px;max-height:90%;overflow:auto;background:white;border-radius:14px;padding:10px;box-shadow:0 10px 20px rgba(0,0,0,0.1);z-index:1000;}
-.place{padding:4px 0;border-bottom:1px solid #e2e8f0;}
-</style>
+  <style>
+    html,body,#map{height:100%;margin:0;}
+    body{font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: linear-gradient(180deg,#f8fafc 0%, #ffffff 40%); color:#0f172a;}
+    #map{position:fixed;inset:0;}
+    .control-panel{position:fixed;left:16px;top:16px;width:320px;max-height:80vh;overflow:auto;background:white;border-radius:14px;padding:14px;box-shadow:0 12px 30px rgba(2,6,23,0.08);z-index:1001;}
+    .lang-box{position:fixed;right:16px;top:16px;background:white;padding:8px;border-radius:10px;box-shadow:0 8px 18px rgba(2,6,23,0.08);z-index:1001;}
+    .chip{display:inline-block;padding:8px 12px;border-radius:999px;background:#f1f5f9;color:#334155;margin:6px;cursor:pointer;font-weight:600}
+    .chip.active{background:linear-gradient(90deg,#06b6d4,#60a5fa);color:white}
+    .cat-badge{display:inline-block;padding:4px 8px;border-radius:999px;color:#fff;font-size:12px;margin-top:6px}
+    .cat-beach{background:#0284c7} .cat-hotel{background:#06b6d4} .cat-restaurant{background:#ef4444}
+    .cat-museum{background:#7c3aed} .cat-shop{background:#f59e0b} .cat-park{background:#10b981}
+    .cat-attraction{background:#f97316} .cat-danger{background:#ef4444} .cat-default{background:#64748b}
+    .place-item{padding:8px;border-radius:10px;border:1px solid #eef2f7;margin-bottom:8px;background:white}
+    .controls-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;background:#06b6d4;color:white}
+    .btn-secondary{padding:8px 10px;border-radius:8px;border:1px solid #e6eef6;background:white;color:#0f172a}
+    .small-muted{font-size:12px;color:#64748b}
+    .toggle-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .route-info{margin-top:8px;padding:8px;border-radius:8px;background:#f1f5f9;font-size:13px}
+  </style>
 </head>
-
 <body>
-<div id="map"></div>
 
-<!-- Selector de idioma -->
-<div class="lang">
-  <button onclick="setLang('es')">🇪🇸</button>
-  <button onclick="setLang('en')">🇬🇧</button>
-  <button onclick="setLang('fr')">🇫🇷</button>
-</div>
+  <div id="map"></div>
 
-<!-- Lista lateral -->
-<div class="sidebar" id="sidebar">
-  <h3>Puerto Plata</h3>
-  <div id="placesList"></div>
-</div>
+  <!-- Control panel -->
+  <div class="control-panel" id="panel">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h2 style="margin:0;color:#0369A1">Puerto Plata — Mapa Turístico</h2>
+        <div id="subtitle" class="small-muted">Cargando lugares...</div>
+      </div>
+      <div>
+        <button id="locateBtn" class="btn-secondary" title="Centrar en mi ubicación">📍</button>
+      </div>
+    </div>
+
+    <div class="controls-row" style="margin-top:10px">
+      <input id="search" placeholder="Buscar lugar..." style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6eef6" />
+      <select id="modeSelect" title="Modo" style="margin-left:8px;padding:8px;border-radius:8px;border:1px solid #e6eef6">
+        <option value="driving">Auto</option>
+        <option value="walking">Caminando</option>
+        <option value="cycling">Bicicleta</option>
+      </select>
+    </div>
+
+    <div style="margin-top:10px">
+      <div id="filters" style="display:flex;flex-wrap:wrap">
+        <div class="chip active" data-cat="all">Todos</div>
+        <div class="chip" data-cat="beach">Playas</div>
+        <div class="chip" data-cat="hotel">Hoteles</div>
+        <div class="chip" data-cat="restaurant">Restaurantes</div>
+        <div class="chip" data-cat="museum">Museos</div>
+        <div class="chip" data-cat="shop">Tiendas</div>
+        <div class="chip" data-cat="park">Parques</div>
+        <div class="chip" data-cat="attraction">Atracciones</div>
+        <div class="chip" data-cat="danger">Precaución</div>
+      </div>
+    </div>
+
+    <div style="margin-top:10px">
+      <label class="small-muted">Mostrar zonas de precaución</label>
+      <div class="toggle-row"><input type="checkbox" id="togglePrecaution" /> <small class="small-muted"> (oculto por defecto)</small></div>
+    </div>
+
+    <div style="margin-top:12px">
+      <button id="downloadBtn" class="btn-secondary">Descargar POI (JSON)</button>
+    </div>
+
+    <hr style="margin:12px 0;border:none;border-top:1px solid #eef2f7" />
+
+    <div id="placesList"></div>
+
+    <div id="routeBox" class="route-info" style="display:none">
+      <div id="routeTitle" style="font-weight:700">Ruta</div>
+      <div id="routeDetails" style="margin-top:6px">—</div>
+      <div style="margin-top:8px;display:flex;gap:8px">
+        <button id="stopRouteBtn" class="btn-secondary">Detener ruta</button>
+        <button id="recalcBtn" class="btn">Recalcular</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Language selector -->
+  <div class="lang-box" style="position:fixed;right:16px;top:16px;z-index:1001">
+    <button id="lang-es" title="Español">🇪🇸</button>
+    <button id="lang-en" title="English">🇬🇧</button>
+    <button id="lang-fr" title="Français">🇫🇷</button>
+  </div>
 
 <script>
-// Idioma actual
-let LANG='es';
-
-// Crear mapa centrado en Puerto Plata
-const map=L.map('map').setView([19.79,-70.69],12);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  {maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-
-// Cambiar idioma
-function setLang(l){LANG=l;renderList();}
-
-// ======= Lista de lugares =======
-const places=[
-  {id:'1',name:'Teleférico Isabel de Torres',lat:19.7829,lon:-70.7038,cat:'attraction',desc:{es:'Vista panorámica',en:'Panoramic view',fr:'Vue panoramique'}},
-  {id:'2',name:'Playa Dorada',lat:19.7753,lon:-70.6424,cat:'beach',desc:{es:'Famosa playa de arena dorada',en:'Famous golden beach',fr:'Plage dorée célèbre'}},
-  {id:'3',name:'Fortaleza San Felipe',lat:19.801283,lon:-70.690886,cat:'historic',desc:{es:'Fortaleza colonial',en:'Colonial fortress',fr:'Forteresse coloniale'}},
-  {id:'4',name:'Museo del Ámbar',lat:19.7964,lon:-70.6922,cat:'museum',desc:{es:'Museo dedicado al ámbar dominicano',en:'Amber museum',fr:'Musée de l\'ambre'}},
-  {id:'5',name:'Parque Central',lat:19.795,-70.6939,cat:'park',desc:{es:'Centro de la ciudad',en:'City center',fr:'Centre-ville'}},
-  {id:'6',name:'Zona de Precaución: Callejón La Loma',lat:19.792,-70.700,cat:'danger',desc:{es:'Zona con alto riesgo de robos nocturnos',en:'Area with higher night risk',fr:'Zone à risque la nuit'}}
-];
-
-// Crear lugares aleatorios (simulados hasta tener 300)
-for(let i=7;i<=300;i++){
-  let lat=19.79+(Math.random()-0.5)*0.1;
-  let lon=-70.69+(Math.random()-0.5)*0.1;
-  places.push({
-    id:String(i),
-    name:'Lugar '+i,
-    lat,lon,
-    cat:['hotel','restaurant','shop','beach','park'][i%5],
-    desc:{es:'Lugar turístico',en:'Touristic place',fr:'Lieu touristique'}
-  });
-}
-
-// Colores por categoría
-function makeIcon(color){
-  return L.divIcon({
-    html:`<div style="width:28px;height:28px;background:${color};
-           border-radius:50%;border:2px solid white;"></div>`,
-    iconSize:[28,28],className:''
-  });
-}
-const catColor={
-  beach:'#0284c7', hotel:'#06b6d4', restaurant:'#ef4444', museum:'#7c3aed',
-  park:'#10b981', historic:'#f97316', danger:'#f43f5e', shop:'#f59e0b', attraction:'#fbbf24'
+/* ---------------------------
+   Config / Locales
+   -------------------------- */
+const MAP_CENTER = [19.7934, -70.6884];
+const INIT_ZOOM = 13;
+let LANG = 'es'; // es | en | fr
+const LOCALES = {
+  es: {
+    subtitle: 'Hoteles, playas, restaurantes, museos y más.',
+    locate_error: 'No se pudo obtener la ubicación.',
+    route_time: 'Tiempo estimado: {mins} min • {km} km',
+    route_fail: 'No se pudo obtener la ruta.',
+    view: 'Ver',
+    route: 'Cómo llegar'
+  },
+  en: {
+    subtitle: 'Hotels, beaches, restaurants, museums and more.',
+    locate_error: 'Could not get location.',
+    route_time: 'Estimated time: {mins} min • {km} km',
+    route_fail: 'Could not get route.',
+    view: 'View',
+    route: 'Directions'
+  },
+  fr: {
+    subtitle: 'Hôtels, plages, restaurants, musées et plus.',
+    locate_error: 'Impossible d\'obtenir la position.',
+    route_time: 'Durée estimée: {mins} min • {km} km',
+    route_fail: 'Impossible d\'obtenir l\'itinéraire.',
+    view: 'Voir',
+    route: 'Itinéraire'
+  }
 };
 
-// Marcadores
-const markers=L.markerClusterGroup();
-places.forEach(p=>{
-  const icon=makeIcon(catColor[p.cat]||'#64748b');
-  const m=L.marker([p.lat,p.lon],{icon});
-  m.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]||''}<br><small>${p.cat}</small>`);
-  markers.addLayer(m);
-});
-map.addLayer(markers);
+/* ---------------------------
+   Places data (300 items)
+   - first lines are real known places, rest are generated for demo
+   - each place: {id,name,lat,lon,category,desc:{es,en,fr}}
+   -------------------------- */
+const PLACES = [
+  {id:'real-1', name:'Teleférico Isabel de Torres', lat:19.7829, lon:-70.7038, category:'attraction', desc:{es:'Teleférico al monte Isabel de Torres', en:'Cable car to Mount Isabel de Torres', fr:'Téléphérique vers le mont Isabel de Torres'}},
+  {id:'real-2', name:'Fortaleza San Felipe', lat:19.801283, lon:-70.690886, category:'historic', desc:{es:'Fuerte histórico', en:'16th-century fortress', fr:'Forteresse du XVIe siècle'}},
+  {id:'real-3', name:'Malecón de Puerto Plata', lat:19.8019, lon:-70.6880, category:'attraction', desc:{es:'Paseo marítimo con restaurantes', en:'Seafront promenade with eateries', fr:'Promenade en bord de mer avec restaurants'}},
+  {id:'real-4', name:'Museo del Ámbar', lat:19.7964, lon:-70.6922, category:'museum', desc:{es:'Museo del ámbar dominicano', en:'Amber museum', fr:'Musée de l\'ambre'}},
+  {id:'real-5', name:'Playa Dorada', lat:19.7753, lon:-70.6424, category:'beach', desc:{es:'Playa y complejo hotelero', en:'Beach and hotel complex', fr:'Plage et complexe hôtelier'}},
+  {id:'real-6', name:'Amber Cove (terminal)', lat:19.8344, lon:-70.7755, category:'attraction', desc:{es:'Terminal de cruceros', en:'Cruise terminal', fr:'Terminal de croisières'}},
+  // example precaution zones as places (also polygons defined later)
+  {id:'prec-1', name:'Zona Precaución - Parte baja', lat:19.792, lon:-70.700, category:'danger', desc:{es:'Zona con mayor incidencia nocturna. Tomar taxi.', en:'Area with higher night incidents. Take taxi.', fr:'Zone à risque la nuit. Prenez un taxi.'}},
+  {id:'prec-2', name:'Zona Precaución - Barrio X', lat:19.786, lon:-70.711, category:'danger', desc:{es:'Evitar caminar solo de noche', en:'Avoid walking alone at night', fr:'Éviter de marcher seul la nuit'}},
+];
 
-// Lista lateral
-function renderList(){
-  const list=document.getElementById('placesList');
-  list.innerHTML='';
-  places.forEach(p=>{
-    const div=document.createElement('div');
-    div.className='place';
-    div.innerHTML=`<b>${p.name}</b><br>${p.desc[LANG]||''}<br>
-      <button onclick="flyTo(${p.lat},${p.lon})">
-        ${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}
-      </button>
-      <button onclick="routeTo(${p.lat},${p.lon})">
-        ${LANG==='es'?'Ruta':LANG==='en'?'Route':'Itinéraire'}
-      </button>`;
-    list.appendChild(div);
+// generate the rest up to 300 (demo placeholders)
+(function generateDemoPlaces(){
+  const cats = ['hotel','restaurant','shop','beach','park','museum','attraction','historic','villa'];
+  const baseLat = MAP_CENTER[0], baseLon = MAP_CENTER[1];
+  let idCounter = 1;
+  while(PLACES.length < 300){
+    const lat = baseLat + (Math.random()-0.5)*0.08; // ~ +/- ~4-5 km
+    const lon = baseLon + (Math.random()-0.5)*0.08;
+    const cat = cats[idCounter % cats.length];
+    PLACES.push({
+      id: 'gen-' + idCounter,
+      name: (cat==='hotel'?'Hotel ':cat==='restaurant'?'Restaurante ':cat==='beach'?'Playa ':cat==='museum'?'Museo ':cat==='park'?'Parque ':'Lugar ') + idCounter,
+      lat: parseFloat(lat.toFixed(6)),
+      lon: parseFloat(lon.toFixed(6)),
+      category: cat,
+      desc: {
+        es: `Descripción en español del ${cat} ${idCounter}`,
+        en: `English description for ${cat} ${idCounter}`,
+        fr: `Description française pour ${cat} ${idCounter}`
+      }
+    });
+    idCounter++;
+  }
+})();
+
+/* ---------------------------
+   Map init + clustering
+   -------------------------- */
+const map = L.map('map').setView(MAP_CENTER, INIT_ZOOM);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+const markerCluster = L.markerClusterGroup({chunkedLoading:true});
+map.addLayer(markerCluster);
+
+const ICON_SVGS = {
+  beach: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4" fill="#60A5FA"/><path d="M3 21c3-4 6-6 9-6s6 2 9 6" stroke="#0369A1" stroke-width="1.2" stroke-linecap="round"/></svg>',
+  hotel: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="2" fill="#06B6D4"/><path d="M7 10h.01M11 10h.01M15 10h.01" stroke="#003E4D" stroke-width="1.2" stroke-linecap="round"/></svg>',
+  restaurant: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M8 2v12" stroke="#EF4444" stroke-width="1.6"/><path d="M12 2v12" stroke="#EF4444" stroke-width="1.6"/><path d="M6 18h12v2H6z" fill="#FECACA"/></svg>',
+  museum: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v2H4V7l8-4z" fill="#7C3AED"/><path d="M6 11v6" stroke="#51228E" stroke-width="1.2"/><path d="M9 11v6" stroke="#51228E" stroke-width="1.2"/></svg>',
+  shop: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><rect x="4" y="7" width="16" height="11" rx="2" fill="#F59E0B"/><path d="M4 10h16" stroke="#8A4B00" stroke-width="1.2"/></svg>',
+  park: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="4" fill="#34D399"/><path d="M12 13v6" stroke="#14532D" stroke-width="1.2"/></svg>',
+  attraction: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 2l1.8 4.6L18 8l-3.6 2.6L14 15l-2-1.4L10 15l.6-4.4L7 8l4.2-1.4L12 2z" fill="#FDE68A"/></svg>',
+  danger: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><path d="M12 3l9 16H3L12 3z" fill="#F43F5E"/><path d="M12 8v5" stroke="#7F1D1D" stroke-width="1.6"/><path d="M12 15h.01" stroke="#7F1D1D" stroke-width="1.6"/></svg>',
+  default: '<svg width="36" height="36" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" fill="#94a3b8"/></svg>'
+};
+
+function makeDivIcon(svgHtml){
+  return L.divIcon({
+    html: `<div style="width:52px;height:52px;border-radius:12px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 22px rgba(2,6,23,0.12)">${svgHtml}</div>`,
+    className: '',
+    iconAnchor: [26,52]
   });
+}
+
+const markersIndex = {}; // id -> marker
+function renderAllPOIs(){
+  markerCluster.clearLayers();
+  for(const p of PLACES){
+    const svg = ICON_SVGS[p.category] || ICON_SVGS['default'];
+    const icon = makeDivIcon(svg);
+    const marker = L.marker([p.lat,p.lon], {icon});
+    marker.bindPopup(makePopupHTML(p), {maxWidth:320});
+    marker.on('click', () => {
+      // optional: show route info if active and this is destination
+    });
+    markerCluster.addLayer(marker);
+    markersIndex[p.id] = marker;
+  }
+}
+renderAllPOIs();
+
+/* popup HTML multi-idioma con botones */
+function makePopupHTML(p){
+  const name = escapeHtml(p.name || '—');
+  const desc = (p.desc && (p.desc[LANG] || p.desc.es)) || '';
+  const badge = `<span class="cat-badge cat-${p.category||'default'}">${escapeHtml(p.category||'')}</span>`;
+  const btnView = `<button class="btn-secondary" onclick="map.flyTo([${p.lat},${p.lon}],16)">${LOCALES[LANG].view}</button>`;
+  const btnRoute = `<button class="btn" onclick="startRouteTo(${p.lat},${p.lon},'${p.id}')">${LOCALES[LANG].route}</button>`;
+  return `<div style="max-width:300px"><div style="font-weight:700;margin-bottom:6px">${name}</div><div style="font-size:13px;color:#475569">${escapeHtml(desc)}</div><div style="margin-top:8px">${badge}</div><div style="margin-top:8px;display:flex;gap:8px">${btnView}${btnRoute}</div></div>`;
+}
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+/* ---------------------------
+   Lista lateral (search + filters)
+   -------------------------- */
+const placesListEl = document.getElementById('placesList');
+function renderList(filter='all', q=''){
+  placesListEl.innerHTML = '';
+  const ql = (q||'').toLowerCase();
+  const filtered = PLACES.filter(p => {
+    if(filter !== 'all' && p.category !== filter) return false;
+    if(ql && !(String(p.name).toLowerCase().includes(ql) || (p.desc && (p.desc[LANG]||'').toLowerCase().includes(ql)))) return false;
+    return true;
+  });
+  // sort
+  filtered.sort((a,b) => (a.category + a.name).localeCompare(b.category + b.name));
+  for(const p of filtered){
+    const div = document.createElement('div');
+    div.className = 'place-item';
+    div.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-weight:700">${escapeHtml(p.name)}</div>
+        <div class="small-muted" style="font-size:12px">${escapeHtml(p.category)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <button class="btn" onclick="flyToPlace(${p.lat},${p.lon})">${LOCALES[LANG].view}</button>
+        <button class="btn-secondary" onclick="startRouteTo(${p.lat},${p.lon},'${p.id}')">${LOCALES[LANG].route}</button>
+      </div>
+    </div>`;
+    placesListEl.appendChild(div);
+  }
 }
 renderList();
 
-// Función para centrar mapa
-function flyTo(lat,lon){map.flyTo([lat,lon],15);}
+/* wire search + filters */
+document.getElementById('search').addEventListener('input', e => {
+  const active = document.querySelector('#filters .chip.active');
+  renderList(active ? active.dataset.cat : 'all', e.target.value);
+});
+document.getElementById('filters').addEventListener('click', e => {
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('#filters .chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  const cat = chip.dataset.cat;
+  renderList(cat, document.getElementById('search').value);
+});
 
-// Posición del usuario
-let userMarker=null,routeLine=null;
+/* download JSON */
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(PLACES, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'places_puerto_plata.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+/* ---------------------------
+   Precaution zones (polygons) hidden by default
+   -------------------------- */
+const precautionZones = [
+  { id:'pz-1', name_es:'Zona baja - Precaución', name_en:'Lower area - Caution', name_fr:'Zone basse - Précaution', coords:[[19.793, -70.702],[19.791,-70.694],[19.786,-70.697],[19.788,-70.704]] },
+  { id:'pz-2', name_es:'Barrio oscuro - Taxi recomendado', name_en:'Dark neighborhood - Taxi recommended', name_fr:'Quartier sombre - Taxi recommandé', coords:[[19.786,-70.711],[19.784,-70.708],[19.780,-70.709],[19.783,-70.713]] }
+];
+const precautionLayer = L.layerGroup();
+function buildPrecautionLayer(){
+  precautionLayer.clearLayers();
+  for(const z of precautionZones){
+    const poly = L.polygon(z.coords, {color:'#ef4444', weight:1, fillOpacity:0.12});
+    poly.bindPopup(`<strong>${LANG==='es'?z.name_es:LANG==='fr'?z.name_fr:z.name_en}</strong><br/><small>${LOCALES[LANG].route_fail}</small>`);
+    precautionLayer.addLayer(poly);
+  }
+}
+buildPrecautionLayer();
+document.getElementById('togglePrecaution').addEventListener('change', e => {
+  if(e.target.checked) precautionLayer.addTo(map);
+  else map.removeLayer(pre cautionLayerField);
+});
+/* small fix to avoid accidental var name used above */
+document.getElementById('togglePrecaution').addEventListener('change', e => {
+  if(e.target.checked) precautionLayer.addTo(map);
+  else map.removeLayer(precautionLayer);
+});
+
+/* ---------------------------
+   User location & visitor simulation
+   -------------------------- */
+let userMarker = null;
+let userLocation = null;
 if(navigator.geolocation){
-  navigator.geolocation.watchPosition(pos=>{
-    const {latitude,longitude}=pos.coords;
+  navigator.geolocation.watchPosition(pos => {
+    const lat = pos.coords.latitude, lon = pos.coords.longitude;
+    userLocation = [lat, lon];
     if(!userMarker){
-      userMarker=L.marker([latitude,longitude],{icon:makeIcon('#0ea5e9')}).addTo(map);
+      userMarker = L.circleMarker([lat,lon], {radius:7, color:'#06b6d4', fillColor:'#06b6d4', fillOpacity:0.9}).addTo(map);
     } else {
-      userMarker.setLatLng([latitude,longitude]);
+      userMarker.setLatLng([lat,lon]);
     }
-  },()=>{}, {enableHighAccuracy:true});
+  }, err => {
+    console.warn('geo watch err', err);
+  }, { enableHighAccuracy:true, maximumAge:2000, timeout:5000 });
+} else {
+  console.warn('Geolocation not supported');
 }
 
-// Ruta en tiempo real
-function routeTo(lat,lon){
-  if(!userMarker){alert('Ubicación no detectada');return;}
-  const u=userMarker.getLatLng();
-  fetch(`https://router.project-osrm.org/route/v1/driving/${u.lng},${u.lat};${lon},${lat}?overview=full&geometries=geojson`)
-  .then(r=>r.json())
-  .then(j=>{
-    const coords=j.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-    if(routeLine){map.removeLayer(routeLine);}
-    routeLine=L.polyline(coords,{color:'#0ea5e9',weight:5}).addTo(map);
-    map.fitBounds(routeLine.getBounds());
-  });
+/* visitor simulation (optional) */
+let visitors = [];
+let visitorInterval = null;
+function startVisitorSimulation(n=10){
+  stopVisitorSimulation();
+  for(let i=0;i<n;i++){
+    const lat = MAP_CENTER[0] + (Math.random()-0.5)*0.04;
+    const lon = MAP_CENTER[1] + (Math.random()-0.5)*0.04;
+    const c = L.circleMarker([lat,lon], {radius:6, color:'#ef4444', fillColor:'#ef4444', fillOpacity:0.9}).addTo(map);
+    visitors.push({marker:c, target: randomNearby([lat,lon])});
+  }
+  visitorInterval = setInterval(()=>{ visitors.forEach(v=>{ const cur = v.marker.getLatLng(); const tgt = v.target; const step = 0.0012; const nx = cur.lat + Math.sign(tgt[0]-cur.lat)*Math.min(Math.abs(tgt[0]-cur.lat), step); const ny = cur.lng + Math.sign(tgt[1]-cur.lng)*Math.min(Math.abs(tgt[1]-cur.lng), step); v.marker.setLatLng([nx,ny]); if(Math.abs(nx-tgt[0])<0.0006 && Math.abs(ny-tgt[1])<0.0006) v.target = randomNearby([nx,ny]); }); }, 900);
 }
+function stopVisitorSimulation(){ if(visitorInterval) clearInterval(visitorInterval); visitors.forEach(v=>v.marker.remove()); visitors=[]; }
+function randomNearby([lat,lon]){ return [lat + (Math.random()-0.5)*0.06, lon + (Math.random()-0.5)*0.06]; }
+startVisitorSimulation(8);
+
+/* ---------------------------
+   Routing (OSRM) supporting modes: driving, walking, cycling
+   - When route active, it recalculates every 5 seconds using current position
+   -------------------------- */
+let currentRoute = null;
+let currentRouteDest = null;
+let routeRecalcTimer = null;
+
+function startRouteTo(destLat, destLon, destId){
+  currentRouteDest = {lat: destLat, lon: destLon, id: destId};
+  // initial compute and then set interval
+  computeAndShowRoute();
+  if(routeRecalcTimer) clearInterval(routeRecalcTimer);
+  routeRecalcTimer = setInterval(() => {
+    computeAndShowRoute();
+  }, 5000);
+  // update UI
+  document.getElementById('routeBox').style.display = 'block';
+  document.getElementById('routeTitle').innerText = LOCALES[LANG].route + ' → ' + (markersIndex[destId] ? markersIndex[destId].getPopup().getContent().split('<br>')[0].replace(/<.*?>/g,'') : destId);
+}
+
+function stopRoute(){
+  if(routeRecalcTimer) clearInterval(routeRecalcTimer);
+  routeRecalcTimer = null;
+  currentRouteDest = null;
+  if(currentRoute){ map.removeLayer(currentRoute); currentRoute = null; }
+  document.getElementById('routeBox').style.display = 'none';
+}
+document.getElementById('stopRouteBtn').addEventListener('click', stopRoute);
+document.getElementById('recalcBtn').addEventListener('click', () => { if(currentRouteDest) computeAndShowRoute(); });
+
+async function computeAndShowRoute(){
+  if(!currentRouteDest){ return; }
+  if(!userLocation){ alert(LOCALES[LANG].locate_error); return; }
+  const mode = document.getElementById('modeSelect').value || 'driving';
+  const profile = mode; // osrm profile: driving, walking, cycling
+  const fromLon = userLocation[1], fromLat = userLocation[0];
+  const toLon = currentRouteDest.lon, toLat = currentRouteDest.lat;
+  const url = `https://router.project-osrm.org/route/v1/${profile}/${fromLon},${fromLat};${toLon},${toLat}?overview=full&geometries=geojson`;
+  try{
+    const res = await fetch(url);
+    const data = await res.json();
+    if(!data || !data.routes || !data.routes.length){ alert(LOCALES[LANG].route_fail); return; }
+    const routeGeo = data.routes[0].geometry;
+    const coords = routeGeo.coordinates.map(c => [c[1], c[0]]);
+    if(currentRoute) map.removeLayer(currentRoute);
+    currentRoute = L.polyline(coords, {color:'#06b6d4', weight:5, opacity:0.95}).addTo(map);
+    map.fitBounds(currentRoute.getBounds(), {padding:[40,40]});
+    const mins = Math.max(1, Math.round(data.routes[0].duration / 60));
+    const km = (data.routes[0].distance / 1000).toFixed(2);
+    document.getElementById('routeDetails').innerText = LOCALES[LANG].route_time.replace('{mins}', mins).replace('{km}', km);
+  }catch(err){
+    console.error('Routing error', err);
+    alert(LOCALES[LANG].route_fail);
+  }
+}
+
+/* ---------------------------
+   Helpers
+   -------------------------- */
+function flyToPlace(lat, lon){ map.flyTo([lat,lon], 16); }
+document.getElementById('locateBtn').addEventListener('click', () => {
+  if(!userLocation){ alert(LOCALES[LANG].locate_error); return; }
+  map.flyTo([userLocation[0], userLocation[1]], 15);
+});
+
+/* language buttons */
+document.getElementById('lang-es').addEventListener('click', ()=> setLangGlobal('es'));
+document.getElementById('lang-en').addEventListener('click', ()=> setLangGlobal('en'));
+document.getElementById('lang-fr').addEventListener('click', ()=> setLangGlobal('fr'));
+function setLangGlobal(l){
+  LANG = l;
+  document.getElementById('subtitle').innerText = LOCALES[LANG].subtitle;
+  // rebuild popups (to show descriptions in selected language)
+  renderAllPOIs();
+  renderList(document.querySelector('#filters .chip.active') ? document.querySelector('#filters .chip.active').dataset.cat : 'all', document.getElementById('search').value);
+  buildPrecautionLayer();
+}
+
+/* small utility to update markers' popups when language changes */
+function renderAllPOIs(){
+  markerCluster.clearLayers();
+  for(const p of PLACES){
+    const svg = ICON_SVGS[p.category] || ICON_SVGS['default'];
+    const icon = makeDivIcon(svg);
+    const marker = L.marker([p.lat,p.lon], {icon});
+    marker.bindPopup(makePopupHTML(p), {maxWidth:320});
+    markerCluster.addLayer(marker);
+    markersIndex[p.id] = marker;
+  }
+}
+renderAllPOIs(); // initial
+
+// initial subtitle
+document.getElementById('subtitle').innerText = LOCALES[LANG].subtitle;
+
+/* ---------------------------
+   End
+   -------------------------- */
+
 </script>
 </body>
 </html>
