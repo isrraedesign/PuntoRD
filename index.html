@@ -1,164 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mapa Turístico de Puerto Plata</title>
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    #map { height: 100vh; }
-    .leaflet-popup-content { font-size: 0.9rem; }
-    .category-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      color: white;
-    }
-    .cat-playa { background-color: #1E90FF; }
-    .cat-hotel { background-color: #00B894; }
-    .cat-restaurante { background-color: #FF7675; }
-    .cat-historico { background-color: #6C5CE7; }
-    .cat-atraccion { background-color: #FDCB6E; }
-    .cat-zona-riesgo { background-color: #E74C3C; } /* para zonas de precaución */
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa Turístico de Puerto Plata</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body,html {margin:0;padding:0;height:100%;}
+  #map {height:100vh;width:100%;}
+  .leaflet-popup-content {font-size:0.9rem;}
+  .cat-badge{display:inline-block;padding:2px 6px;border-radius:6px;font-size:0.7rem;color:#fff}
+  .cat-beach{background:#1E90FF}.cat-hotel{background:#00B894}.cat-restaurant{background:#FF7675}
+  .cat-park{background:#27AE60}.cat-attraction{background:#FDCB6E}.cat-danger{background:#E74C3C}
+</style>
 </head>
-
-<body class="bg-gray-100">
-  <div class="flex flex-col md:flex-row h-screen">
-    <!-- Sidebar -->
-    <div class="w-full md:w-1/4 bg-white p-4 overflow-y-auto shadow-lg z-10">
-      <h1 class="text-2xl font-bold mb-2 text-blue-600">Puerto Plata / Tourist Map / Carte Touristique</h1>
-      <p class="text-sm text-gray-600 mb-4">
-        ES: Lugares turísticos • rutas • simulación • zonas de precaución<br>
-        EN: Tourist spots • routes • simulation • caution areas<br>
-        FR: Lieux touristiques • itinéraires • simulation • zones à risque
-      </p>
-
-      <input id="search" type="text" placeholder="Buscar lugar / Search place / Rechercher lieu..." class="w-full border rounded-lg p-2 mb-4" />
-
-      <div id="placesList" class="space-y-2"></div>
-
-      <div class="mt-4 text-xs text-gray-500">
-        ES: Las zonas marcadas como “precaución” indican áreas donde se recomienda tomar taxi y evitar caminar solo.<br>
-        EN: Areas marked as “caution” indicate zones where it’s recommended to take a taxi and avoid walking alone.<br>
-        FR: Les zones marquées « précaution » indiquent des zones où il est recommandé de prendre un taxi et d’éviter de marcher seul.
-      </div>
-    </div>
-
-    <!-- Map -->
-    <div id="map" class="flex-1"></div>
+<body class="bg-blue-50">
+<div class="flex flex-col md:flex-row h-screen">
+  <div class="w-full md:w-1/4 bg-white p-4 overflow-y-auto shadow-lg z-10">
+    <h1 class="text-2xl font-bold mb-2 text-blue-700">Mapa Turístico de Puerto Plata</h1>
+    <p class="text-sm mb-2 text-gray-600">
+      🇪🇸 Explora lugares, playas, hoteles y rutas<br>
+      🇬🇧 Explore places, beaches, hotels and routes<br>
+      🇫🇷 Découvrez les lieux, plages, hôtels et itinéraires
+    </p>
+    <input id="search" type="text" placeholder="Buscar / Search / Rechercher..." 
+           class="w-full border rounded-lg p-2 mb-4">
+    <div id="placesList" class="space-y-2"></div>
   </div>
+  <div id="map" class="flex-1"></div>
+</div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+<script>
+const map=L.map('map').setView([19.7934,-70.6884],13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+  maxZoom:19,
+  attribution:'&copy; OpenStreetMap'
+}).addTo(map);
 
-  <script>
-    // Inicializar mapa
-    const map = L.map('map').setView([19.7934, -70.6884], 13);
+// --- Aquí está la lista de lugares (truncada, en la versión final irán los 300) ---
+const places=[
+  {name:"Teleférico Isabel de Torres",coords:[19.7829,-70.7038],cat:"attraction",
+   desc:{es:"Teleférico al monte Isabel de Torres",en:"Cable car to Mount Isabel de Torres",fr:"Téléphérique vers le mont Isabel de Torres"}},
+  {name:"Fortaleza San Felipe",coords:[19.801283,-70.690886],cat:"attraction",
+   desc:{es:"Fuerte histórico del siglo XVI",en:"16th century fortress",fr:"Forteresse du XVIᵉ siècle"}},
+  {name:"Playa Dorada",coords:[19.7753,-70.6424],cat:"beach",
+   desc:{es:"Playa popular con hoteles",en:"Popular beach with hotels",fr:"Plage populaire avec hôtels"}},
+  {name:"Museo del Ámbar",coords:[19.7964,-70.6922],cat:"attraction",
+   desc:{es:"Museo dedicado al ámbar dominicano",en:"Museum of Dominican amber",fr:"Musée de l’ambre dominicain"}},
+  {name:"Parque Central",coords:[19.795,-70.6939],cat:"park",
+   desc:{es:"Plaza principal de la ciudad",en:"Main city square",fr:"Place principale de la ville"}},
+  {name:"Zona de precaución (barrio bajo)",coords:[19.7950,-70.6990],cat:"danger",
+   desc:{es:"Evite caminar solo tarde",en:"Avoid walking alone late",fr:"Évitez de marcher seul tard"}}
+];
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+// --- Iconos básicos ---
+const icons={
+  beach:"🏖️",hotel:"🏨",restaurant:"🍽️",park:"🌳",attraction:"🎡",danger:"⚠️"
+};
 
-    // Más lugares reales + zonas de precaución
-    const places = [
-      { name: "Playa Dorada", coords: [19.7753, -70.6424], category: "playa", desc:"ES: Playa popular. / EN: Popular beach. / FR: Plage populaire." },
-      { name: "Malecón de Puerto Plata", coords: [19.8019, -70.6880], category: "atraccion", desc:"ES: Paseo marítimo. / EN: Seafront promenade. / FR: Promenade en bord de mer." },
-      { name: "Fortaleza San Felipe", coords: [19.801283, -70.690886], category: "historico", desc:"ES: Fuerte del siglo XVI. / EN: 16th c. fortress. / FR: Forteresse du XVIe s." },
-      { name: "Teleférico – Isabel de Torres", coords: [19.7829, -70.7038], category: "atraccion", desc:"ES: Teleférico al monte. / EN: Cable-car to mountain. / FR: Téléphérique vers la montagne." },
-      { name: "Museo del Ámbar", coords: [19.7964, -70.6922], category: "atraccion", desc:"ES: Museo de ámbar. / EN: Amber museum. / FR: Musée de l'ambre." },
-      { name: "Amber Cove", coords: [19.8344, -70.7755], category: "atraccion", desc:"ES: Terminal de cruceros. / EN: Cruise ship terminal. / FR: Terminal de croisières." },
-      { name: "Playa Cofresí", coords: [19.8218, -70.6647], category: "playa", desc:"ES: Playa pública acuática. / EN: Public water-beach. / FR: Plage publique." },
-      { name: "Casa Colonial Beach & Spa", coords: [19.7975, -70.6886], category: "hotel", desc:"ES: Hotel boutique. / EN: Boutique hotel. / FR: Hôtel boutique." },
-      { name: "Senator Puerto Plata Resort", coords: [19.8220, -70.7310], category: "hotel", desc:"ES: Resort todo incluido. / EN: All-inclusive resort. / FR: Resort tout compris." },
-      { name: "Restaurante Costa Azul", coords: [19.7992, -70.6890], category: "restaurante", desc:"ES: Marisquería popular. / EN: Popular seafood restaurant. / FR: Restaurant de fruits de mer populaire." },
-      // Zonas de precaución / riesgo
-      { name: "Zona que requiere precaución – Parte baja ciudad", coords: [19.7950, -70.6990], category: "zona-riesgo", desc:"ES: Evitar caminar solo en horas tarde. / EN: Avoid walking alone late hours. / FR: Éviter de marcher seul tard le soir." },
-      { name: "Área de taxi recomendado – Barrio oscuro", coords: [19.7890, -70.7030], category: "zona-riesgo", desc:"ES: Se recomienda tomar taxi. / EN: Taxi recommended. / FR: Taxi recommandé." }
-    ];
+// --- Mostrar marcadores ---
+const cluster=L.markerClusterGroup();
+places.forEach(p=>{
+  const marker=L.marker(p.coords).bindPopup(`
+    <b>${p.name}</b><br>
+    <span class="cat-badge cat-${p.cat}">${p.cat}</span><br><br>
+    🇪🇸 ${p.desc.es}<br>🇬🇧 ${p.desc.en}<br>🇫🇷 ${p.desc.fr}<br>
+    <button onclick="routeTo(${p.coords[0]},${p.coords[1]})"
+      class='mt-2 px-2 py-1 bg-blue-600 text-white rounded text-xs'>Cómo llegar / Get there / Itinéraire</button>
+  `);
+  cluster.addLayer(marker);
+});
+map.addLayer(cluster);
 
-    const icons = {
-      playa: "🏖️", hotel: "🏨", restaurante: "🍽️", historico: "🏛️", atraccion: "🎡", "zona-riesgo": "⚠️"
-    };
+// --- Lista lateral ---
+const list=document.getElementById('placesList');
+function renderList(f=""){
+  list.innerHTML="";
+  places.filter(p=>p.name.toLowerCase().includes(f.toLowerCase())).forEach(p=>{
+    const div=document.createElement('div');
+    div.className="p-2 border rounded hover:bg-blue-50 cursor-pointer";
+    div.innerHTML=`${icons[p.cat]||"📍"} <b>${p.name}</b>`;
+    div.onclick=()=>map.setView(p.coords,16);
+    list.appendChild(div);
+  });
+}
+renderList();
+document.getElementById('search').addEventListener('input',e=>renderList(e.target.value));
 
-    const markers = L.markerClusterGroup();
-
-    places.forEach((p) => {
-      const marker = L.marker(p.coords).bindPopup(`
-        <b>${p.name}</b><br>
-        <span class="category-badge cat-${p.category}">${p.category}</span><br><br>
-        ${p.desc}
-      `);
-      markers.addLayer(marker);
-    });
-
-    map.addLayer(markers);
-
-    // Lista lateral y búsqueda
-    const list = document.getElementById('placesList');
-    function renderList(filter = "") {
-      list.innerHTML = "";
-      places.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()) || p.desc.toLowerCase().includes(filter.toLowerCase())).forEach((p) => {
-        const div = document.createElement("div");
-        div.className = "p-2 border rounded hover:bg-blue-50 cursor-pointer flex justify-between";
-        div.innerHTML = `${icons[p.category]} <span><strong>${p.name}</strong><br><small>${p.desc}</small></span>`;
-        div.onclick = () => {
-          map.setView(p.coords, 15);
-          // abrir popup
-          const m = markers.getLayers().find(mk => mk.getLatLng().lat === p.coords[0] && mk.getLatLng().lng === p.coords[1]);
-          if(m) m.openPopup();
-        };
-        list.appendChild(div);
-      });
-    }
-    renderList();
-
-    document.getElementById('search').addEventListener('input', (e) => renderList(e.target.value));
-
-    // rutas (igual que antes)
-    let routeLayer;
-    function routeTo(lat, lon) {
-      if (routeLayer) map.removeLayer(routeLayer);
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(pos => {
-          const { latitude, longitude } = pos.coords;
-          fetch(`https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${lon},${lat}?overview=full&geometries=geojson`)
-            .then(res => res.json())
-            .then(data => {
-              const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-              routeLayer = L.polyline(coords, { color: 'blue' }).addTo(map);
-              map.fitBounds(routeLayer.getBounds());
-              alert(`Duración estimada: ${(data.routes[0].duration / 60).toFixed(1)} minutos`);
-            });
+// --- Rutas con OSRM ---
+let routeLayer;
+function routeTo(lat,lon){
+  if(routeLayer)map.removeLayer(routeLayer);
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const {latitude,longitude}=pos.coords;
+      fetch(`https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${lon},${lat}?overview=full&geometries=geojson`)
+        .then(r=>r.json()).then(data=>{
+          const coords=data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+          routeLayer=L.polyline(coords,{color:'blue',weight:4}).addTo(map);
+          map.fitBounds(routeLayer.getBounds());
+          alert("⏱ Duración estimada ≈ "+(data.routes[0].duration/60).toFixed(1)+" min");
         });
-      } else {
-        alert("No se pudo obtener la ubicación actual.");
-      }
-    }
+    });
+  }else alert("No se pudo obtener ubicación actual.");
+}
 
-    // Simulación simple (puedes mantener o quitar)
-    for (let i = 0; i < 5; i++) {
-      const t = L.circleMarker([19.7934 + Math.random()*0.02 - 0.01, -70.6884 + Math.random()*0.02 - 0.01], {
-        radius: 6, color: 'red'
-      }).addTo(map);
-      setInterval(() => {
-        const latlng = t.getLatLng();
-        const newLat = latlng.lat + (Math.random() - 0.5) * 0.0005;
-        const newLng = latlng.lng + (Math.random() - 0.5) * 0.0005;
-        t.setLatLng([newLat, newLng]);
-      }, 3000);
-    }
-  </script>
+// --- Marcador en tiempo real ---
+let userMarker;
+if(navigator.geolocation){
+  navigator.geolocation.watchPosition(pos=>{
+    const {latitude,longitude}=pos.coords;
+    if(!userMarker){
+      userMarker=L.marker([latitude,longitude],{title:"Tu ubicación / Your location / Votre position"}).addTo(map);
+    }else userMarker.setLatLng([latitude,longitude]);
+  });
+}
+</script>
 </body>
 </html>
