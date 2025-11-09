@@ -3,12 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Puerto Plata - Lugares Reales</title>
+<title>Mapa Puerto Plata - Cómo llegar en tiempo real</title>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
 <style>
 html, body { height:100%; margin:0; padding:0; font-family:Arial; }
 #map { height:100%; width:100%; }
@@ -26,6 +29,7 @@ button:hover { background:#0369a1; }
 <body>
 
 <div id="map"></div>
+
 <div class="panel">
 <h3>Puerto Plata</h3>
 <input class="search" id="searchBox" placeholder="Buscar lugar...">
@@ -49,35 +53,47 @@ button:hover { background:#0369a1; }
 
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
+
 let LANG='es';
 const map = L.map('map').setView([19.7934,-70.6884],13);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
 
 const ICONS = {street:'#64748b', restaurant:'#ef4444', hotel:'#06b6d4', beach:'#0284c7', port:'#f97316', danger:'#ef4444', default:'#64748b'};
 
-// Lugares reales con coordenadas aproximadas
+// Coordenadas aproximadas de tus lugares
 const places=[
 {name:'Calle Duarte',lat:19.8020,lon:-70.6880,category:'street',desc:{es:'Calle principal',en:'Main street',fr:'Rue principale'}},
 {name:'Calle Beller',lat:19.8000,lon:-70.6890,category:'street',desc:{es:'Calle céntrica',en:'Central street',fr:'Rue centrale'}},
-{name:'Calle Las Sombrillas',lat:19.8030,lon:-70.6900,category:'street',desc:{es:'Zona turística',en:'Tourist area',fr:'Zone touristique'}},
-{name:'Av. Gregorio Luperón',lat:19.8050,lon:-70.6920,category:'street',desc:{es:'Avenida principal',en:'Main avenue',fr:'Avenue principale'}},
+{name:'Playa Dorada',lat:19.7740,lon:-70.6421,category:'beach',desc:{es:'Playa turística',en:'Tourist beach',fr:'Plage touristique'}},
 {name:'La Casita Azul',lat:19.7760,lon:-70.6420,category:'restaurant',desc:{es:'Restaurante típico',en:'Typical restaurant',fr:'Restaurant typique'}},
-{name:'Sambalú',lat:19.7770,lon:-70.6430,category:'restaurant',desc:{es:'Comida internacional',en:'International food',fr:'Cuisine internationale'}},
 {name:'Iberostar Waves Costa Dorada',lat:19.7740,lon:-70.6421,category:'hotel',desc:{es:'Hotel all inclusive',en:'All-inclusive hotel',fr:'Hôtel tout compris'}},
-{name:'BlueBay Villas Doradas',lat:19.7750,lon:-70.6430,category:'hotel',desc:{es:'Adults only resort',en:'Adults only resort',fr:'Resort pour adultes'}},
-{name:'Playa Dorada',lat:19.7740,lon:-70.6421,category:'beach',desc:{es:'Playa de arena dorada',en:'Golden sand beach',fr:'Plage de sable doré'}},
-{name:'Playa Sosúa',lat:19.7240,lon:-70.5080,category:'beach',desc:{es:'Playa turística',en:'Tourist beach',fr:'Plage touristique'}},
 {name:'Puerto de Amber Cove',lat:19.8050,lon:-70.7440,category:'port',desc:{es:'Puerto de cruceros',en:'Cruise port',fr:'Port de croisière'}},
 {name:'Calle Isabel de Torres',lat:19.7830,lon:-70.7040,category:'street',desc:{es:'Calle turística',en:'Tourist street',fr:'Rue touristique'}},
-// ... Puedes agregar el resto siguiendo este formato
+// Agrega el resto siguiendo el mismo formato
 ];
 
-// Clúster
 const markers = L.markerClusterGroup();
+let userMarker=null, userLoc=null, routeLine=null;
+
+function showRoute(lat, lon, name){
+  if(!userLoc){ alert('No se detecta ubicación'); return; }
+  const url = `https://router.project-osrm.org/route/v1/driving/${userLoc[1]},${userLoc[0]};${lon},${lat}?overview=full&geometries=geojson`;
+  fetch(url).then(res=>res.json()).then(data=>{
+    if(routeLine) map.removeLayer(routeLine);
+    const coords = data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+    routeLine = L.polyline(coords,{color:'#2563eb',weight:5}).addTo(map);
+    map.fitBounds(routeLine.getBounds());
+    const mins = Math.round(data.routes[0].duration/60);
+    const km = (data.routes[0].distance/1000).toFixed(1);
+    alert(`${LANG==='es'? 'Destino':'Destination'}: ${name}\n${LANG==='es'? 'Distancia':'Distance'}: ${km} km\n${LANG==='es'? 'Tiempo estimado':'Estimated time'}: ${mins} min`);
+  });
+}
+
+// Crear marcadores
 places.forEach(p=>{
   const color = ICONS[p.category]||ICONS.default;
   const marker = L.marker([p.lat,p.lon],{icon:L.divIcon({html:`<div style="width:16px;height:16px;background:${color};border-radius:50%;border:2px solid white;"></div>`,className:'',iconSize:[16,16]})});
-  marker.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}`);
+  marker.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}<br><button onclick="showRoute(${p.lat},${p.lon},'${p.name}')">${LANG==='es'?'Cómo llegar':LANG==='en'?'Directions':'Itinéraire'}</button>`);
   markers.addLayer(marker);
   p.marker = marker;
 });
@@ -97,8 +113,8 @@ function renderList(){
     const div = document.createElement('div');
     div.className='place';
     div.innerHTML = `<b>${p.name}</b><br>${p.desc[LANG]}<br>
-      <button onclick="map.flyTo([${p.lat},${p.lon}],16)">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>
-      <button onclick="routeTo(${p.lat},${p.lon})">${LANG==='es'?'Cómo llegar':LANG==='en'?'Directions':'Itinéraire'}</button>`;
+    <button onclick="map.flyTo([${p.lat},${p.lon}],16)">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>
+    <button onclick="showRoute(${p.lat},${p.lon},'${p.name}')">${LANG==='es'?'Cómo llegar':LANG==='en'?'Directions':'Itinéraire'}</button>`;
     list.appendChild(div);
   });
 }
@@ -119,13 +135,12 @@ function setLang(l){
   LANG=l;
   markers.eachLayer(m=>{
     const p = places.find(x=>x.marker===m);
-    if(p) m.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}`);
+    if(p) m.bindPopup(`<b>${p.name}</b><br>${p.desc[LANG]}<br><button onclick="showRoute(${p.lat},${p.lon},'${p.name}')">${LANG==='es'?'Cómo llegar':LANG==='en'?'Directions':'Itinéraire'}</button>`);
   });
   renderList();
 }
 
-// GPS y rutas
-let userMarker=null, userLoc=null, routeLine=null;
+// GPS
 if(navigator.geolocation){
   navigator.geolocation.watchPosition(pos=>{
     userLoc=[pos.coords.latitude,pos.coords.longitude];
@@ -136,20 +151,8 @@ if(navigator.geolocation){
   });
 }
 
-async function routeTo(lat,lon){
-  if(!userLoc){ alert('No se detecta ubicación'); return; }
-  const mode = prompt('Modo: driving, walking, cycling','driving')||'driving';
-  const url = `https://router.project-osrm.org/route/v1/${mode}/${userLoc[1]},${userLoc[0]};${lon},${lat}?overview=full&geometries=geojson`;
-  const res = await fetch(url); const data = await res.json();
-  if(routeLine) map.removeLayer(routeLine);
-  const coords = data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
-  routeLine = L.polyline(coords,{color:'#2563eb',weight:5}).addTo(map);
-  map.fitBounds(routeLine.getBounds());
-  const mins = Math.round(data.routes[0].duration/60);
-  const km = (data.routes[0].distance/1000).toFixed(1);
-  alert(`Distancia: ${km} km\nTiempo estimado: ${mins} min`);
-}
-
+});
 </script>
+
 </body>
 </html>
