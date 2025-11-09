@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mapa Turístico de Puerto Plata</title>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    #map { height: 100vh; }
+    .leaflet-popup-content { font-size: 0.9rem; }
+    .category-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      color: white;
+    }
+    .cat-playa { background-color: #1E90FF; }
+    .cat-hotel { background-color: #00B894; }
+    .cat-restaurante { background-color: #FF7675; }
+    .cat-historico { background-color: #6C5CE7; }
+    .cat-atraccion { background-color: #FDCB6E; }
+  </style>
+</head>
+
+<body class="bg-gray-100">
+  <div class="flex flex-col md:flex-row h-screen">
+    <!-- Sidebar -->
+    <div class="w-full md:w-1/4 bg-white p-4 overflow-y-auto shadow-lg z-10">
+      <h1 class="text-2xl font-bold mb-2 text-blue-600">Puerto Plata</h1>
+      <p class="text-sm text-gray-600 mb-4">Descubre los lugares turísticos más hermosos de Puerto Plata.</p>
+
+      <input id="search" type="text" placeholder="Buscar lugar..." class="w-full border rounded-lg p-2 mb-4" />
+
+      <div id="placesList" class="space-y-2"></div>
+    </div>
+
+    <!-- Mapa -->
+    <div id="map" class="flex-1"></div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+  <script>
+    // Inicializar mapa
+    const map = L.map('map').setView([19.795, -70.694], 13);
+
+    // Capa base de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Lugares turísticos
+    const places = [
+      { name: "Playa Dorada", coords: [19.769, -70.647], category: "playa" },
+      { name: "Malecón de Puerto Plata", coords: [19.797, -70.701], category: "atraccion" },
+      { name: "Fortaleza San Felipe", coords: [19.802, -70.712], category: "historico" },
+      { name: "Teleférico de Puerto Plata", coords: [19.780, -70.698], category: "atraccion" },
+      { name: "Parque Central", coords: [19.795, -70.694], category: "historico" },
+      { name: "Amber Cove", coords: [19.832, -70.861], category: "atraccion" },
+      { name: "Ocean World Adventure Park", coords: [19.824, -70.729], category: "atraccion" },
+      { name: "Casa Colonial Beach & Spa", coords: [19.770, -70.647], category: "hotel" },
+      { name: "Senator Puerto Plata Resort", coords: [19.822, -70.732], category: "hotel" },
+      { name: "Le Petit Francois Restaurante", coords: [19.802, -70.712], category: "restaurante" },
+      { name: "Los Tres Cocos Restaurant", coords: [19.789, -70.688], category: "restaurante" },
+      { name: "Museo del Ámbar Dominicano", coords: [19.797, -70.693], category: "historico" }
+    ];
+
+    const icons = {
+      playa: "🏖️", hotel: "🏨", restaurante: "🍽️", historico: "🏛️", atraccion: "🎡"
+    };
+
+    const markers = L.markerClusterGroup();
+
+    // Crear marcadores
+    places.forEach((p) => {
+      const marker = L.marker(p.coords).bindPopup(`
+        <b>${p.name}</b><br>
+        <span class="category-badge cat-${p.category}">${p.category}</span><br><br>
+        <button onclick="routeTo(${p.coords})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Cómo llegar</button>
+      `);
+      markers.addLayer(marker);
+    });
+
+    map.addLayer(markers);
+
+    // Llenar lista lateral
+    const list = document.getElementById('placesList');
+    function renderList(filter = "") {
+      list.innerHTML = "";
+      places.filter(p => p.name.toLowerCase().includes(filter.toLowerCase())).forEach((p) => {
+        const div = document.createElement("div");
+        div.className = "p-2 border rounded hover:bg-blue-50 cursor-pointer";
+        div.innerHTML = `${icons[p.category]} <b>${p.name}</b> <span class="category-badge cat-${p.category}">${p.category}</span>`;
+        div.onclick = () => map.setView(p.coords, 16);
+        list.appendChild(div);
+      });
+    }
+    renderList();
+
+    document.getElementById('search').addEventListener('input', (e) => renderList(e.target.value));
+
+    // Rutas
+    let routeLayer;
+    function routeTo(lat, lon) {
+      if (routeLayer) map.removeLayer(routeLayer);
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(pos => {
+          const { latitude, longitude } = pos.coords;
+          fetch(`https://router.project-osrm.org/route/v1/driving/${longitude},${latitude};${lon},${lat}?overview=full&geometries=geojson`)
+            .then(res => res.json())
+            .then(data => {
+              const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+              routeLayer = L.polyline(coords, { color: 'blue' }).addTo(map);
+              map.fitBounds(routeLayer.getBounds());
+              alert(`Duración estimada: ${(data.routes[0].duration / 60).toFixed(1)} minutos`);
+            });
+        });
+      } else {
+        alert("No se pudo obtener la ubicación actual.");
+      }
+    }
+
+    // Simulación de turistas (movimiento)
+    function randomMove(marker) {
+      const latlng = marker.getLatLng();
+      const newLat = latlng.lat + (Math.random() - 0.5) * 0.0005;
+      const newLng = latlng.lng + (Math.random() - 0.5) * 0.0005;
+      marker.setLatLng([newLat, newLng]);
+    }
+
+    for (let i = 0; i < 5; i++) {
+      const t = L.circleMarker([19.795 + Math.random() * 0.02, -70.69 + Math.random() * 0.02], {
+        radius: 6, color: 'red'
+      }).addTo(map);
+      setInterval(() => randomMove(t), 3000);
+    }
+  </script>
+</body>
+</html>
 
