@@ -51,7 +51,7 @@
       }
     };
 
-    // Datos de lugares (puedes ampliar)
+    // Datos de lugares turísticos (puedes ampliar)
     const touristPlaces = [
       {lat: 19.779, lng: -70.690, name: {es:"Cayo Arena",en:"Cayo Arena",fr:"Cayo Arena"}, type:"beach"},
       {lat: 19.797, lng: -70.690, name: {es:"Fuerte San Felipe",en:"San Felipe Fort",fr:"Fort San Felipe"}, type:"historic"},
@@ -60,7 +60,7 @@
       {lat: 19.790, lng: -70.710, name: {es:"Villas Playa Grande",en:"Playa Grande Villas",fr:"Villas Playa Grande"}, type:"villa"},
     ];
 
-    // Lugares peligrosos
+    // Zonas peligrosas identificadas
     let dangerZones = [
       {lat: 19.780, lng: -70.700, name: {es:"Zona Peligrosa 1",en:"Danger Zone 1",fr:"Zone Dangereuse 1"}},
       {lat: 19.770, lng: -70.680, name: {es:"Zona Peligrosa 2",en:"Danger Zone 2",fr:"Zone Dangereuse 2"}},
@@ -131,9 +131,8 @@
       loadMarkers();
     });
 
-    // Simulación tiempo real: alternar peligros de forma periódica
+    // Simulación tiempo real: alternar visibilidad de la segunda zona peligrosa para mostrar efecto tiempo real
     setInterval(() => {
-      // Alternar visibilidad de la segunda zona peligrosa para mostrar efecto tiempo real
       if (dangerMarkers[1]) {
         const m = dangerMarkers[1];
         m.getMap() ? m.setMap(null) : m.setMap(map);
