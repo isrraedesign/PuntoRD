@@ -3,20 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Turístico Puerto Plata - Tiempo Real</title>
-
-<!-- Leaflet CSS -->
+<title>Mapa Puerto Plata - Lugares Reales</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
-
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-
 <style>
-html, body { height:100%; margin:0; padding:0; font-family:Arial, sans-serif; }
+html, body { height:100%; margin:0; padding:0; font-family:Arial; }
 #map { height:100%; width:100%; }
-.panel { position:absolute; top:10px; left:10px; width:340px; max-height:90%; overflow:auto; background:white; padding:12px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1000;}
+.panel { position:absolute; top:10px; left:10px; width:350px; max-height:90%; overflow:auto; background:white; padding:12px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1000;}
 .panel h3 { margin-top:0; }
 .search { width:95%; padding:6px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc; }
 .place { padding:6px; border-bottom:1px solid #eee; }
@@ -30,61 +26,53 @@ button:hover { background:#0369a1; }
 <body>
 
 <div id="map"></div>
-
 <div class="panel">
-  <h3>Puerto Plata</h3>
-  <input class="search" id="searchBox" placeholder="Buscar lugar...">
-  <div id="filters">
-    <span class="chip active" data-cat="all">Todos</span>
-    <span class="chip" data-cat="beach">Playas</span>
-    <span class="chip" data-cat="hotel">Hoteles</span>
-    <span class="chip" data-cat="restaurant">Restaurantes</span>
-    <span class="chip" data-cat="museum">Museos</span>
-    <span class="chip" data-cat="park">Parques</span>
-    <span class="chip" data-cat="attraction">Atracciones</span>
-    <span class="chip" data-cat="danger">Precaución</span>
-  </div>
-  <div id="placesList"></div>
+<h3>Puerto Plata</h3>
+<input class="search" id="searchBox" placeholder="Buscar lugar...">
+<div id="filters">
+  <span class="chip active" data-cat="all">Todos</span>
+  <span class="chip" data-cat="street">Calles</span>
+  <span class="chip" data-cat="restaurant">Restaurantes</span>
+  <span class="chip" data-cat="hotel">Hoteles / Villas</span>
+  <span class="chip" data-cat="beach">Playas</span>
+  <span class="chip" data-cat="port">Puertos</span>
+  <span class="chip" data-cat="danger">Precaución</span>
+</div>
+<div id="placesList"></div>
 </div>
 
 <div class="langbox">
-  <button onclick="setLang('es')">🇪🇸</button>
-  <button onclick="setLang('en')">🇬🇧</button>
-  <button onclick="setLang('fr')">🇫🇷</button>
+<button onclick="setLang('es')">🇪🇸</button>
+<button onclick="setLang('en')">🇬🇧</button>
+<button onclick="setLang('fr')">🇫🇷</button>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
-
 let LANG='es';
 const map = L.map('map').setView([19.7934,-70.6884],13);
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
 
-// Iconos por categoría
-const ICONS = {
-  beach:'#0284c7', hotel:'#06b6d4', restaurant:'#ef4444',
-  museum:'#7c3aed', park:'#10b981', attraction:'#f97316', danger:'#ef4444', default:'#64748b'
-};
+const ICONS = {street:'#64748b', restaurant:'#ef4444', hotel:'#06b6d4', beach:'#0284c7', port:'#f97316', danger:'#ef4444', default:'#64748b'};
 
-// --- Lugares reales de Puerto Plata (ejemplo) ---
-const places = [
-  {name:'Teleférico Isabel de Torres',lat:19.7829,lon:-70.7038,category:'attraction',desc:{es:'Teleférico al monte Isabel de Torres',en:'Cable car to Mount Isabel de Torres',fr:'Téléphérique vers le mont Isabel de Torres'}},
-  {name:'Fortaleza San Felipe',lat:19.8013,lon:-70.6909,category:'museum',desc:{es:'Fuerte histórico',en:'Historic fortress',fr:'Forteresse historique'}},
-  {name:'Playa Dorada',lat:19.7740,lon:-70.6421,category:'beach',desc:{es:'Resort / playa',en:'Resort beach',fr:'Plage resort'}},
-  {name:'Ocean World',lat:19.8262,lon:-70.7303,category:'attraction',desc:{es:'Parque acuático',en:'Water park',fr:'Parc aquatique'}},
-  {name:'Museo del Ámbar',lat:19.7964,lon:-70.6922,category:'museum',desc:{es:'Museo del ámbar',en:'Amber museum',fr:'Musée de l\'ambre'}},
-  {name:'Malecón de Puerto Plata',lat:19.8019,lon:-70.6880,category:'attraction',desc:{es:'Paseo marítimo',en:'Seafront promenade',fr:'Promenade en bord de mer'}}
+// Lugares reales con coordenadas aproximadas
+const places=[
+{name:'Calle Duarte',lat:19.8020,lon:-70.6880,category:'street',desc:{es:'Calle principal',en:'Main street',fr:'Rue principale'}},
+{name:'Calle Beller',lat:19.8000,lon:-70.6890,category:'street',desc:{es:'Calle céntrica',en:'Central street',fr:'Rue centrale'}},
+{name:'Calle Las Sombrillas',lat:19.8030,lon:-70.6900,category:'street',desc:{es:'Zona turística',en:'Tourist area',fr:'Zone touristique'}},
+{name:'Av. Gregorio Luperón',lat:19.8050,lon:-70.6920,category:'street',desc:{es:'Avenida principal',en:'Main avenue',fr:'Avenue principale'}},
+{name:'La Casita Azul',lat:19.7760,lon:-70.6420,category:'restaurant',desc:{es:'Restaurante típico',en:'Typical restaurant',fr:'Restaurant typique'}},
+{name:'Sambalú',lat:19.7770,lon:-70.6430,category:'restaurant',desc:{es:'Comida internacional',en:'International food',fr:'Cuisine internationale'}},
+{name:'Iberostar Waves Costa Dorada',lat:19.7740,lon:-70.6421,category:'hotel',desc:{es:'Hotel all inclusive',en:'All-inclusive hotel',fr:'Hôtel tout compris'}},
+{name:'BlueBay Villas Doradas',lat:19.7750,lon:-70.6430,category:'hotel',desc:{es:'Adults only resort',en:'Adults only resort',fr:'Resort pour adultes'}},
+{name:'Playa Dorada',lat:19.7740,lon:-70.6421,category:'beach',desc:{es:'Playa de arena dorada',en:'Golden sand beach',fr:'Plage de sable doré'}},
+{name:'Playa Sosúa',lat:19.7240,lon:-70.5080,category:'beach',desc:{es:'Playa turística',en:'Tourist beach',fr:'Plage touristique'}},
+{name:'Puerto de Amber Cove',lat:19.8050,lon:-70.7440,category:'port',desc:{es:'Puerto de cruceros',en:'Cruise port',fr:'Port de croisière'}},
+{name:'Calle Isabel de Torres',lat:19.7830,lon:-70.7040,category:'street',desc:{es:'Calle turística',en:'Tourist street',fr:'Rue touristique'}},
+// ... Puedes agregar el resto siguiendo este formato
 ];
 
-// Generar marcadores hasta 150 (puedes reemplazar por reales)
-for(let i=7;i<=150;i++){
-  const lat = 19.78 + (Math.random()-0.5)*0.08;
-  const lon = -70.69 + (Math.random()-0.5)*0.08;
-  const cat=['hotel','restaurant','beach','museum','park','attraction','danger'][i%7];
-  places.push({name:`Lugar ${i}`,lat:parseFloat(lat.toFixed(6)),lon:parseFloat(lon.toFixed(6)),category:cat,desc:{es:`Descripción ${i}`,en:`Description ${i}`,fr:`Description ${i}`}});
-}
-
-// Clúster de marcadores
+// Clúster
 const markers = L.markerClusterGroup();
 places.forEach(p=>{
   const color = ICONS[p.category]||ICONS.default;
@@ -126,7 +114,7 @@ document.querySelectorAll('#filters .chip').forEach(c=>{
   });
 });
 
-// Cambiar idioma
+// Idioma
 function setLang(l){
   LANG=l;
   markers.eachLayer(m=>{
@@ -136,17 +124,18 @@ function setLang(l){
   renderList();
 }
 
-// GPS y rutas en tiempo real
+// GPS y rutas
 let userMarker=null, userLoc=null, routeLine=null;
 if(navigator.geolocation){
   navigator.geolocation.watchPosition(pos=>{
     userLoc=[pos.coords.latitude,pos.coords.longitude];
-    if(!userMarker) userMarker=L.marker(userLoc,{icon:L.divIcon({html:`<div style="width:12px;height:12px;background:green;border-radius:50%"></div>`})}).addTo(map);
-    else userMarker.setLatLng(userLoc);
+    if(!userMarker){
+      userMarker=L.marker(userLoc,{icon:L.divIcon({html:`<div style="width:12px;height:12px;background:green;border-radius:50%"></div>`})}).addTo(map);
+      map.setView(userLoc,13);
+    } else userMarker.setLatLng(userLoc);
   });
 }
 
-// Función de ruta
 async function routeTo(lat,lon){
   if(!userLoc){ alert('No se detecta ubicación'); return; }
   const mode = prompt('Modo: driving, walking, cycling','driving')||'driving';
@@ -161,8 +150,6 @@ async function routeTo(lat,lon){
   alert(`Distancia: ${km} km\nTiempo estimado: ${mins} min`);
 }
 
-});
 </script>
-
 </body>
 </html>
