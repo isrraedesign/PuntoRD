@@ -3,21 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mapa Turístico Puerto Plata</title>
+<title>Mapa Turístico Puerto Plata - Tiempo Real</title>
 
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <style>
 html, body { height:100%; margin:0; padding:0; font-family:Arial, sans-serif; }
 #map { height:100%; width:100%; }
-.panel { position:absolute; top:10px; left:10px; width:320px; max-height:90%; overflow:auto; background:white; padding:12px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1000;}
+.panel { position:absolute; top:10px; left:10px; width:340px; max-height:90%; overflow:auto; background:white; padding:12px; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.15); z-index:1000;}
 .panel h3 { margin-top:0; }
 .search { width:95%; padding:6px; margin-bottom:8px; border-radius:6px; border:1px solid #ccc; }
 .place { padding:6px; border-bottom:1px solid #eee; }
@@ -57,7 +56,6 @@ button:hover { background:#0369a1; }
 <script>
 document.addEventListener('DOMContentLoaded', ()=>{
 
-// --- Configuración ---
 let LANG='es';
 const map = L.map('map').setView([19.7934,-70.6884],13);
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(map);
@@ -68,7 +66,7 @@ const ICONS = {
   museum:'#7c3aed', park:'#10b981', attraction:'#f97316', danger:'#ef4444', default:'#64748b'
 };
 
-// --- Lugares: verificados + generados (150+) ---
+// --- Lugares reales de Puerto Plata (ejemplo) ---
 const places = [
   {name:'Teleférico Isabel de Torres',lat:19.7829,lon:-70.7038,category:'attraction',desc:{es:'Teleférico al monte Isabel de Torres',en:'Cable car to Mount Isabel de Torres',fr:'Téléphérique vers le mont Isabel de Torres'}},
   {name:'Fortaleza San Felipe',lat:19.8013,lon:-70.6909,category:'museum',desc:{es:'Fuerte histórico',en:'Historic fortress',fr:'Forteresse historique'}},
@@ -78,7 +76,7 @@ const places = [
   {name:'Malecón de Puerto Plata',lat:19.8019,lon:-70.6880,category:'attraction',desc:{es:'Paseo marítimo',en:'Seafront promenade',fr:'Promenade en bord de mer'}}
 ];
 
-// Generar lugares de prueba hasta 150
+// Generar marcadores hasta 150 (puedes reemplazar por reales)
 for(let i=7;i<=150;i++){
   const lat = 19.78 + (Math.random()-0.5)*0.08;
   const lon = -70.69 + (Math.random()-0.5)*0.08;
@@ -86,7 +84,7 @@ for(let i=7;i<=150;i++){
   places.push({name:`Lugar ${i}`,lat:parseFloat(lat.toFixed(6)),lon:parseFloat(lon.toFixed(6)),category:cat,desc:{es:`Descripción ${i}`,en:`Description ${i}`,fr:`Description ${i}`}});
 }
 
-// --- Clúster de marcadores ---
+// Clúster de marcadores
 const markers = L.markerClusterGroup();
 places.forEach(p=>{
   const color = ICONS[p.category]||ICONS.default;
@@ -97,7 +95,7 @@ places.forEach(p=>{
 });
 map.addLayer(markers);
 
-// --- Lista lateral ---
+// Lista lateral
 const list = document.getElementById('placesList');
 function renderList(){
   list.innerHTML='';
@@ -111,14 +109,15 @@ function renderList(){
     const div = document.createElement('div');
     div.className='place';
     div.innerHTML = `<b>${p.name}</b><br>${p.desc[LANG]}<br>
-    <button onclick="map.flyTo([${p.lat},${p.lon}],16)">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>`;
+      <button onclick="map.flyTo([${p.lat},${p.lon}],16)">${LANG==='es'?'Ver':LANG==='en'?'View':'Voir'}</button>
+      <button onclick="routeTo(${p.lat},${p.lon})">${LANG==='es'?'Cómo llegar':LANG==='en'?'Directions':'Itinéraire'}</button>`;
     list.appendChild(div);
   });
 }
 renderList();
 document.getElementById('searchBox').addEventListener('input',renderList);
 
-// --- Filtros ---
+// Filtros
 document.querySelectorAll('#filters .chip').forEach(c=>{
   c.addEventListener('click',()=>{
     document.querySelectorAll('#filters .chip').forEach(x=>x.classList.remove('active'));
@@ -127,7 +126,7 @@ document.querySelectorAll('#filters .chip').forEach(c=>{
   });
 });
 
-// --- Cambiar idioma ---
+// Cambiar idioma
 function setLang(l){
   LANG=l;
   markers.eachLayer(m=>{
@@ -137,16 +136,29 @@ function setLang(l){
   renderList();
 }
 
-// --- GPS en tiempo real ---
-let userMarker=null;
+// GPS y rutas en tiempo real
+let userMarker=null, userLoc=null, routeLine=null;
 if(navigator.geolocation){
   navigator.geolocation.watchPosition(pos=>{
-    const loc=[pos.coords.latitude,pos.coords.longitude];
-    if(!userMarker){
-      userMarker=L.marker(loc,{icon:L.divIcon({html:`<div style="width:12px;height:12px;background:green;border-radius:50%"></div>`})}).addTo(map);
-      map.setView(loc,13);
-    } else userMarker.setLatLng(loc);
+    userLoc=[pos.coords.latitude,pos.coords.longitude];
+    if(!userMarker) userMarker=L.marker(userLoc,{icon:L.divIcon({html:`<div style="width:12px;height:12px;background:green;border-radius:50%"></div>`})}).addTo(map);
+    else userMarker.setLatLng(userLoc);
   });
+}
+
+// Función de ruta
+async function routeTo(lat,lon){
+  if(!userLoc){ alert('No se detecta ubicación'); return; }
+  const mode = prompt('Modo: driving, walking, cycling','driving')||'driving';
+  const url = `https://router.project-osrm.org/route/v1/${mode}/${userLoc[1]},${userLoc[0]};${lon},${lat}?overview=full&geometries=geojson`;
+  const res = await fetch(url); const data = await res.json();
+  if(routeLine) map.removeLayer(routeLine);
+  const coords = data.routes[0].geometry.coordinates.map(c=>[c[1],c[0]]);
+  routeLine = L.polyline(coords,{color:'#2563eb',weight:5}).addTo(map);
+  map.fitBounds(routeLine.getBounds());
+  const mins = Math.round(data.routes[0].duration/60);
+  const km = (data.routes[0].distance/1000).toFixed(1);
+  alert(`Distancia: ${km} km\nTiempo estimado: ${mins} min`);
 }
 
 });
