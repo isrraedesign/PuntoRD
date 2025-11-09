@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mapa turístico — Puerto Plata</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <style>
+    /* pequeños estilos extra */
+    #map{height:calc(100vh - 32px);border-radius:14px;overflow:hidden}
+    .icon-badge{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px}
+    .glass{backdrop-filter:blur(6px);background:rgba(255,255,255,0.6)}
+    @media (max-width:900px){#sidebar{height:260px;overflow:auto}}
+  </style>
+</head>
+<body class="bg-sky-50 text-slate-800 font-sans">
+  <div class="max-w-7xl mx-auto p-4 grid lg:grid-cols-4 gap-4">
+    <aside id="sidebar" class="lg:col-span-1 glass p-4 rounded-2xl shadow-lg">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-emerald-400 to-sky-400 rounded-xl flex items-center justify-center text-white font-bold">PP</div>
+        <div>
+          <h1 class="text-lg font-semibold">Puerto Plata — Mapa turístico</h1>
+          <p class="text-sm text-slate-500">Íconos por categoría • rutas • simulación de turistas</p>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-slate-600">Buscar</label>
+        <input id="search" type="search" placeholder="Buscar lugar, hotel, playa..." class="mt-2 w-full p-2 rounded-lg border focus:outline-none" />
+      </div>
+
+      <div class="mt-3 flex flex-wrap gap-2">
+        <button data-cat="all" class="chip px-3 py-1 rounded-full bg-white text-slate-600 shadow">Todos</button>
+        <button data-cat="beach" class="chip px-3 py-1 rounded-full">Playas</button>
+        <button data-cat="historic" class="chip px-3 py-1 rounded-full">Histórico</button>
+        <button data-cat="hotel" class="chip px-3 py-1 rounded-full">Hoteles</button>
+        <button data-cat="restaurant" class="chip px-3 py-1 rounded-full">Restaurantes</button>
+        <button data-cat="attraction" class="chip px-3 py-1 rounded-full">Atracciones</button>
+      </div>
+
+      <div class="mt-4 text-sm text-slate-600">Lugares</div>
+      <div id="placesList" class="mt-2 space-y-2 overflow-auto max-h-72"></div>
+
+      <div class="mt-4 flex gap-2">
+        <button id="centerBtn" class="w-full rounded-lg py-2 bg-emerald-500 text-white">Centrar en Puerto Plata</button>
+      </div>
+
+      <div class="mt-3 flex gap-2">
+        <button id="simulateBtn" class="flex-1 rounded-lg py-2 bg-cyan-500 text-white">Iniciar simulación</button>
+        <button id="stopSimBtn" class="flex-1 rounded-lg py-2 bg-red-500 text-white hidden">Detener</button>
+      </div>
+
+      <p class="mt-3 text-xs text-slate-500">Edita el archivo <code>places</code> en el código para agregar/quitar sitios. Listo para GitHub Pages.</p>
+    </aside>
+
+    <main class="lg:col-span-3">
+      <div id="map" class="shadow-lg"></div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script>
+    // ===== Datos iniciales (lugares reales y ejemplos) =====
+    const places = [
+      {id:1,name:"Fortaleza San Felipe",cat:"historic",coords:[19.801283,-70.690886],desc:"Fuerte histórico en el Malecón."},
+      {id:2,name:"Malecón de Puerto Plata",cat:"attraction",coords:[19.8019,-70.6880],desc:"Paseo marítimo con restaurantes."},
+      {id:3,name:"Playa Dorada",cat:"beach",coords:[19.7753,-70.6424],desc:"Gran complejo hotelero y playa."},
+      {id:4,name:"Teleférico - Isabel de Torres",cat:"attraction",coords:[19.7829,-70.7038],desc:"Teleférico hasta la cima con vistas."},
+      {id:5,name:"Museo del Ámbar",cat:"attraction",coords:[19.7964,-70.6922],desc:"Museo del ámbar dominicano."},
+      {id:6,name:"Amber Cove (Muelle)",cat:"attraction",coords:[19.8344,-70.7755],desc:"Terminal de cruceros y comercios."},
+      {id:7,name:"Ocean World Adventure Park",cat:"attraction",coords:[19.7419,-70.6799],desc:"Parque acuático y marina (cercano)."},
+      {id:8,name:"Hotel Casa Colonial",cat:"hotel",coords:[19.7975,-70.6886],desc:"Hotel boutique en la ciudad."},
+      {id:9,name:"Villa Taino",cat:"hotel",coords:[19.7780,-70.6450],desc:"Villas cerca de Playa Dorada."},
+      {id:10,name:"Restaurante Costa Azul",cat:"restaurant",coords:[19.7992,-70.6890],desc:"Marisquería popular en el Malecón."},
+      {id:11,name:"Playa Cofresi",cat:"beach",coords:[19.8218,-70.6647],desc:"Playa pública con actividades acuáticas."},
+      {id:12,name:"Centro Histórico — Calle del Conde",cat:"historic",coords:[19.7968,-70.6919],desc:"Calles históricas y tiendas locales."}
+    ];
+
+    // ===== Inicializar mapa =====
+    const map = L.map('map').setView([19.7934,-70.6884],13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
+
+    // cluster
+    const markersGroup = L.markerClusterGroup();
+
+    // iconos simples usando divIcon para estilo moderno
+    function makeIconHTML(label){
+      return `<div class="icon-badge shadow" style="background:linear-gradient(135deg,#06b6d4,#06a6d4);color:white;font-weight:700">${label}</div>`;
+    }
+
+    const icons = {
+      beach: L.divIcon({className:'', html:makeIconHTML('Pl'), iconSize:[44,44], iconAnchor:[22,44]}),
+      historic: L.divIcon({className:'', html:makeIconHTML('H'), iconSize:[44,44], iconAnchor:[22,44]}),
+      hotel: L.divIcon({className:'', html:makeIconHTML('Ht'), iconSize:[44,44], iconAnchor:[22,44]}),
+      restaurant: L.divIcon({className:'', html:makeIconHTML('R'), iconSize:[44,44], iconAnchor:[22,44]}),
+      attraction: L.divIcon({className:'', html:makeIconHTML('A'), iconSize:[44,44], iconAnchor:[22,44]}
+      )
+    };
+
+    // crear marcadores y lista
+    const markerIndex = {};
+    function renderAll(){
+      markersGroup.clearLayers();
+      document.getElementById('placesList').innerHTML='';
+      places.forEach(p=>{
+        const m = L.marker(p.coords, {icon: icons[p.cat]}).bindPopup(`<strong>${p.name}</strong><br>${p.desc}<br><small>${p.coords[0].toFixed(6)}, ${p.coords[1].toFixed(6)}</small><br><div style='margin-top:6px'><button onclick="routeFromUserTo(${p.id})">Ruta aquí</button></div>`);
+        markersGroup.addLayer(m);
+        markerIndex[p.id]=m;
+
+        const item = document.createElement('div'); item.className='p-2 rounded-lg bg-white shadow-sm flex items-center justify-between';
+        item.innerHTML = `<div class='flex items-center gap-3'><div class='w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center'>${p.cat[0].toUpperCase()}</div>
+          <div><div class='font-semibold'>${p.name}</div><div class='text-xs text-slate-500'>${p.desc}</div></div></div>
+          <div class='flex flex-col gap-2'><button data-id='${p.id}' class='goBtn rounded-md px-3 py-1 bg-emerald-500 text-white text-sm'>Ir</button><button data-id='${p.id}' class='viewBtn rounded-md px-3 py-1 bg-white border text-sm'>Ver</button></div>`;
+        document.getElementById('placesList').appendChild(item);
+      });
+      map.addLayer(markersGroup);
+    }
+
+    renderAll();
+
+    // filtros
+    document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('bg-emerald-200'));
+      b.classList.add('bg-emerald-200');
+      const cat = b.dataset.cat;
+      if(cat==='all'){ renderAll(); return; }
+      markersGroup.clearLayers(); document.getElementById('placesList').innerHTML='';
+      places.filter(p=>p.cat===cat).forEach(p=>{ markersGroup.addLayer(markerIndex[p.id]); /* reconstruye lista */ const el=document.createElement('div'); el.className='p-2 rounded-lg bg-white shadow-sm flex items-center justify-between'; el.innerHTML=`<div class='flex items-center gap-3'><div class='w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center'>${p.cat[0].toUpperCase()}</div><div><div class='font-semibold'>${p.name}</div><div class='text-xs text-slate-500'>${p.desc}</div></div></div><div class='flex flex-col gap-2'><button data-id='${p.id}' class='goBtn rounded-md px-3 py-1 bg-emerald-500 text-white text-sm'>Ir</button><button data-id='${p.id}' class='viewBtn rounded-md px-3 py-1 bg-white border text-sm'>Ver</button></div>`; document.getElementById('placesList').appendChild(el); });
+      map.addLayer(markersGroup);
+    }));
+
+    // búsqueda simple
+    document.getElementById('search').addEventListener('input', e=>{
+      const q = e.target.value.toLowerCase();
+      markersGroup.clearLayers(); document.getElementById('placesList').innerHTML='';
+      places.filter(p=>p.name.toLowerCase().includes(q) || p.desc.toLowerCase().includes(q)).forEach(p=>{ markersGroup.addLayer(markerIndex[p.id]); const el=document.createElement('div'); el.className='p-2 rounded-lg bg-white shadow-sm flex items-center justify-between'; el.innerHTML=`<div class='flex items-center gap-3'><div class='w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center'>${p.cat[0].toUpperCase()}</div><div><div class='font-semibold'>${p.name}</div><div class='text-xs text-slate-500'>${p.desc}</div></div></div><div class='flex flex-col gap-2'><button data-id='${p.id}' class='goBtn rounded-md px-3 py-1 bg-emerald-500 text-white text-sm'>Ir</button><button data-id='${p.id}' class='viewBtn rounded-md px-3 py-1 bg-white border text-sm'>Ver</button></div>`; document.getElementById('placesList').appendChild(el); });
+      map.addLayer(markersGroup);
+    });
+
+    // acciones lista
+    document.getElementById('placesList').addEventListener('click', e=>{
+      const go = e.target.closest('.goBtn'); const view = e.target.closest('.viewBtn');
+      if(go){ const id=Number(go.dataset.id); routeFromUserTo(id); }
+      if(view){ const id=Number(view.dataset.id); map.setView(places.find(p=>p.id===id).coords,15); markerIndex[id].openPopup(); }
+    });
+
+    // centrar
+    document.getElementById('centerBtn').addEventListener('click', ()=>map.setView([19.7934,-70.6884],13));
+
+    // ===== Rutas con OSRM (demo público) =====
+    let currentRoute=null;
+    async function drawRoute(from,to,name){
+      const url = `https://router.project-osrm.org/route/v1/driving/${from[1]},${from[0]};${to[1]},${to[0]}?overview=full&geometries=geojson`;
+      try{
+        const res = await fetch(url); const data = await res.json();
+        if(data.routes && data.routes.length){ const route = data.routes[0]; const coords = route.geometry.coordinates.map(c=>[c[1],c[0]]);
+          if(currentRoute) map.removeLayer(currentRoute);
+          currentRoute = L.polyline(coords,{weight:5,color:'#06b6d4',opacity:0.9}).addTo(map);
+          map.fitBounds(currentRoute.getBounds(),{padding:[40,40]});
+          const durationMin = Math.round(route.duration/60);
+          L.popup().setLatLng(coords[Math.floor(coords.length/2)]).setContent(`<strong>Ruta a ${name}</strong><br>Tiempo estimado: ${durationMin} min<br>Distancia: ${(route.distance/1000).toFixed(2)} km`).openOn(map);
+        } else alert('No se pudo obtener ruta.');
+      } catch(err){ console.error(err); alert('Error de rutas: '+err.message); }
+    }
+
+    // obtener ubicación y enviar a drawRoute
+    window.routeFromUserTo = function(idOrCoords){
+      let place;
+      if(typeof idOrCoords === 'number') place = places.find(p=>p.id===idOrCoords);
+      else place = {coords: idOrCoords};
+      if(navigator.geolocation){ navigator.geolocation.getCurrentPosition(pos=>{ drawRoute([pos.coords.latitude,pos.coords.longitude], place.coords, place.name || 'Destino'); }, ()=>{ alert('No se obtuvo ubicación. Usando centro de la ciudad.'); drawRoute([19.7934,-70.6884], place.coords, place.name || 'Destino'); }); } else { drawRoute([19.7934,-70.6884], place.coords, place.name || 'Destino'); }
+    };
+
+    // ===== Simulación de turistas (movimiento relativo) =====
+    let simInterval=null; const tourists=[];
+    function startSimulation(){ if(simInterval) return; const center=[19.7934,-70.6884]; for(let i=0;i<10;i++){ const lat = center[0] + (Math.random()-0.5)*0.08; const lng = center[1] + (Math.random()-0.5)*0.08; const c = L.circleMarker([lat,lng],{radius:6}).addTo(map); c.bindTooltip('Turista '+(i+1)); tourists.push({marker:c,target:randomTargetNearby([lat,lng])}); }
+      simInterval = setInterval(stepSim,800); document.getElementById('simulateBtn').classList.add('hidden'); document.getElementById('stopSimBtn').classList.remove('hidden'); }
+    function stopSimulation(){ clearInterval(simInterval); simInterval=null; tourists.forEach(t=>map.removeLayer(t.marker)); tourists.length=0; document.getElementById('simulateBtn').classList.remove('hidden'); document.getElementById('stopSimBtn').classList.add('hidden'); }
+    function randomTargetNearby([lat,lng]){ return [lat + (Math.random()-0.5)*0.06, lng + (Math.random()-0.5)*0.06]; }
+    function stepSim(){ tourists.forEach(t=>{ const cur = t.marker.getLatLng(); const tgt = t.target; const step=0.0015; const nx = cur.lat + Math.sign(tgt[0]-cur.lat)*Math.min(Math.abs(tgt[0]-cur.lat),step); const ny = cur.lng + Math.sign(tgt[1]-cur.lng)*Math.min(Math.abs(tgt[1]-cur.lng),step); t.marker.setLatLng([nx,ny]); if(Math.abs(nx-tgt[0])<0.0006 && Math.abs(ny-tgt[1])<0.0006) t.target = randomTargetNearby([nx,ny]); }); }
+    document.getElementById('simulateBtn').addEventListener('click', startSimulation); document.getElementById('stopSimBtn').addEventListener('click', stopSimulation);
+
+    // ===== Lista editable desde JSON (preparado para panel admin) =====
+    // Puedes reemplazar este arreglo con una carga desde archivo JSON o un panel.
+
+    // ===== Guardar/descargar JSON de lugares (opcional) =====
+    function downloadPlaces(){ const blob = new Blob([JSON.stringify(places, null, 2)],{type:'application/json'}); const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='places-puerto-plata.json'; a.click(); URL.revokeObjectURL(url); }
+
+    // atajos de teclado: D para descargar JSON
+    document.addEventListener('keydown', e=>{ if(e.key.toLowerCase()==='d') downloadPlaces(); });
+  </script>
+</body>
+</html>
