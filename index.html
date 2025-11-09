@@ -28,6 +28,7 @@
     .cat-restaurante { background-color: #FF7675; }
     .cat-historico { background-color: #6C5CE7; }
     .cat-atraccion { background-color: #FDCB6E; }
+    .cat-zona-riesgo { background-color: #E74C3C; } /* para zonas de precaución */
   </style>
 </head>
 
@@ -35,15 +36,25 @@
   <div class="flex flex-col md:flex-row h-screen">
     <!-- Sidebar -->
     <div class="w-full md:w-1/4 bg-white p-4 overflow-y-auto shadow-lg z-10">
-      <h1 class="text-2xl font-bold mb-2 text-blue-600">Puerto Plata</h1>
-      <p class="text-sm text-gray-600 mb-4">Descubre los lugares turísticos más hermosos de Puerto Plata.</p>
+      <h1 class="text-2xl font-bold mb-2 text-blue-600">Puerto Plata / Tourist Map / Carte Touristique</h1>
+      <p class="text-sm text-gray-600 mb-4">
+        ES: Lugares turísticos • rutas • simulación • zonas de precaución<br>
+        EN: Tourist spots • routes • simulation • caution areas<br>
+        FR: Lieux touristiques • itinéraires • simulation • zones à risque
+      </p>
 
-      <input id="search" type="text" placeholder="Buscar lugar..." class="w-full border rounded-lg p-2 mb-4" />
+      <input id="search" type="text" placeholder="Buscar lugar / Search place / Rechercher lieu..." class="w-full border rounded-lg p-2 mb-4" />
 
       <div id="placesList" class="space-y-2"></div>
+
+      <div class="mt-4 text-xs text-gray-500">
+        ES: Las zonas marcadas como “precaución” indican áreas donde se recomienda tomar taxi y evitar caminar solo.<br>
+        EN: Areas marked as “caution” indicate zones where it’s recommended to take a taxi and avoid walking alone.<br>
+        FR: Les zones marquées « précaution » indiquent des zones où il est recommandé de prendre un taxi et d’éviter de marcher seul.
+      </div>
     </div>
 
-    <!-- Mapa -->
+    <!-- Map -->
     <div id="map" class="flex-1"></div>
   </div>
 
@@ -53,57 +64,61 @@
 
   <script>
     // Inicializar mapa
-    const map = L.map('map').setView([19.795, -70.694], 13);
+    const map = L.map('map').setView([19.7934, -70.6884], 13);
 
-    // Capa base de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
-    // Lugares turísticos
+    // Más lugares reales + zonas de precaución
     const places = [
-      { name: "Playa Dorada", coords: [19.769, -70.647], category: "playa" },
-      { name: "Malecón de Puerto Plata", coords: [19.797, -70.701], category: "atraccion" },
-      { name: "Fortaleza San Felipe", coords: [19.802, -70.712], category: "historico" },
-      { name: "Teleférico de Puerto Plata", coords: [19.780, -70.698], category: "atraccion" },
-      { name: "Parque Central", coords: [19.795, -70.694], category: "historico" },
-      { name: "Amber Cove", coords: [19.832, -70.861], category: "atraccion" },
-      { name: "Ocean World Adventure Park", coords: [19.824, -70.729], category: "atraccion" },
-      { name: "Casa Colonial Beach & Spa", coords: [19.770, -70.647], category: "hotel" },
-      { name: "Senator Puerto Plata Resort", coords: [19.822, -70.732], category: "hotel" },
-      { name: "Le Petit Francois Restaurante", coords: [19.802, -70.712], category: "restaurante" },
-      { name: "Los Tres Cocos Restaurant", coords: [19.789, -70.688], category: "restaurante" },
-      { name: "Museo del Ámbar Dominicano", coords: [19.797, -70.693], category: "historico" }
+      { name: "Playa Dorada", coords: [19.7753, -70.6424], category: "playa", desc:"ES: Playa popular. / EN: Popular beach. / FR: Plage populaire." },
+      { name: "Malecón de Puerto Plata", coords: [19.8019, -70.6880], category: "atraccion", desc:"ES: Paseo marítimo. / EN: Seafront promenade. / FR: Promenade en bord de mer." },
+      { name: "Fortaleza San Felipe", coords: [19.801283, -70.690886], category: "historico", desc:"ES: Fuerte del siglo XVI. / EN: 16th c. fortress. / FR: Forteresse du XVIe s." },
+      { name: "Teleférico – Isabel de Torres", coords: [19.7829, -70.7038], category: "atraccion", desc:"ES: Teleférico al monte. / EN: Cable-car to mountain. / FR: Téléphérique vers la montagne." },
+      { name: "Museo del Ámbar", coords: [19.7964, -70.6922], category: "atraccion", desc:"ES: Museo de ámbar. / EN: Amber museum. / FR: Musée de l'ambre." },
+      { name: "Amber Cove", coords: [19.8344, -70.7755], category: "atraccion", desc:"ES: Terminal de cruceros. / EN: Cruise ship terminal. / FR: Terminal de croisières." },
+      { name: "Playa Cofresí", coords: [19.8218, -70.6647], category: "playa", desc:"ES: Playa pública acuática. / EN: Public water-beach. / FR: Plage publique." },
+      { name: "Casa Colonial Beach & Spa", coords: [19.7975, -70.6886], category: "hotel", desc:"ES: Hotel boutique. / EN: Boutique hotel. / FR: Hôtel boutique." },
+      { name: "Senator Puerto Plata Resort", coords: [19.8220, -70.7310], category: "hotel", desc:"ES: Resort todo incluido. / EN: All-inclusive resort. / FR: Resort tout compris." },
+      { name: "Restaurante Costa Azul", coords: [19.7992, -70.6890], category: "restaurante", desc:"ES: Marisquería popular. / EN: Popular seafood restaurant. / FR: Restaurant de fruits de mer populaire." },
+      // Zonas de precaución / riesgo
+      { name: "Zona que requiere precaución – Parte baja ciudad", coords: [19.7950, -70.6990], category: "zona-riesgo", desc:"ES: Evitar caminar solo en horas tarde. / EN: Avoid walking alone late hours. / FR: Éviter de marcher seul tard le soir." },
+      { name: "Área de taxi recomendado – Barrio oscuro", coords: [19.7890, -70.7030], category: "zona-riesgo", desc:"ES: Se recomienda tomar taxi. / EN: Taxi recommended. / FR: Taxi recommandé." }
     ];
 
     const icons = {
-      playa: "🏖️", hotel: "🏨", restaurante: "🍽️", historico: "🏛️", atraccion: "🎡"
+      playa: "🏖️", hotel: "🏨", restaurante: "🍽️", historico: "🏛️", atraccion: "🎡", "zona-riesgo": "⚠️"
     };
 
     const markers = L.markerClusterGroup();
 
-    // Crear marcadores
     places.forEach((p) => {
       const marker = L.marker(p.coords).bindPopup(`
         <b>${p.name}</b><br>
         <span class="category-badge cat-${p.category}">${p.category}</span><br><br>
-        <button onclick="routeTo(${p.coords})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">Cómo llegar</button>
+        ${p.desc}
       `);
       markers.addLayer(marker);
     });
 
     map.addLayer(markers);
 
-    // Llenar lista lateral
+    // Lista lateral y búsqueda
     const list = document.getElementById('placesList');
     function renderList(filter = "") {
       list.innerHTML = "";
-      places.filter(p => p.name.toLowerCase().includes(filter.toLowerCase())).forEach((p) => {
+      places.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()) || p.desc.toLowerCase().includes(filter.toLowerCase())).forEach((p) => {
         const div = document.createElement("div");
-        div.className = "p-2 border rounded hover:bg-blue-50 cursor-pointer";
-        div.innerHTML = `${icons[p.category]} <b>${p.name}</b> <span class="category-badge cat-${p.category}">${p.category}</span>`;
-        div.onclick = () => map.setView(p.coords, 16);
+        div.className = "p-2 border rounded hover:bg-blue-50 cursor-pointer flex justify-between";
+        div.innerHTML = `${icons[p.category]} <span><strong>${p.name}</strong><br><small>${p.desc}</small></span>`;
+        div.onclick = () => {
+          map.setView(p.coords, 15);
+          // abrir popup
+          const m = markers.getLayers().find(mk => mk.getLatLng().lat === p.coords[0] && mk.getLatLng().lng === p.coords[1]);
+          if(m) m.openPopup();
+        };
         list.appendChild(div);
       });
     }
@@ -111,7 +126,7 @@
 
     document.getElementById('search').addEventListener('input', (e) => renderList(e.target.value));
 
-    // Rutas
+    // rutas (igual que antes)
     let routeLayer;
     function routeTo(lat, lon) {
       if (routeLayer) map.removeLayer(routeLayer);
@@ -132,21 +147,18 @@
       }
     }
 
-    // Simulación de turistas (movimiento)
-    function randomMove(marker) {
-      const latlng = marker.getLatLng();
-      const newLat = latlng.lat + (Math.random() - 0.5) * 0.0005;
-      const newLng = latlng.lng + (Math.random() - 0.5) * 0.0005;
-      marker.setLatLng([newLat, newLng]);
-    }
-
+    // Simulación simple (puedes mantener o quitar)
     for (let i = 0; i < 5; i++) {
-      const t = L.circleMarker([19.795 + Math.random() * 0.02, -70.69 + Math.random() * 0.02], {
+      const t = L.circleMarker([19.7934 + Math.random()*0.02 - 0.01, -70.6884 + Math.random()*0.02 - 0.01], {
         radius: 6, color: 'red'
       }).addTo(map);
-      setInterval(() => randomMove(t), 3000);
+      setInterval(() => {
+        const latlng = t.getLatLng();
+        const newLat = latlng.lat + (Math.random() - 0.5) * 0.0005;
+        const newLng = latlng.lng + (Math.random() - 0.5) * 0.0005;
+        t.setLatLng([newLat, newLng]);
+      }, 3000);
     }
   </script>
 </body>
 </html>
-
